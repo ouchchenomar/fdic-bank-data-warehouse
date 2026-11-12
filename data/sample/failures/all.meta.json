@@ -1,0 +1,22 @@
+{
+  "source_batch_id": "failures_all_20261112T192423312Z",
+  "source_index_name": "failures_1787667198788",
+  "source_index_created_at": "2026-08-25T14:13:18+00:00",
+  "certs": [
+    628,
+    3510,
+    3511,
+    5520,
+    6548,
+    7213,
+    25744,
+    25796,
+    28611,
+    28722,
+    34065,
+    57488,
+    57834
+  ],
+  "rows": 8,
+  "rows_in_source_batch": 4117
+}

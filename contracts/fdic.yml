@@ -1,0 +1,110 @@
+# Data contract for the FDIC BankFind Suite API.
+# Every field below was checked against the live API on 2026-11-12.
+# Units: usd_thousands = thousands of US dollars, percent = percentage points.
+
+version: 1
+
+source:
+  name: FDIC BankFind Suite API
+  base_url: https://api.fdic.gov/banks
+  documentation: https://api.fdic.gov/banks/docs/
+  terms: Public data published by the U.S. Federal Deposit Insurance Corporation. No API key.
+
+datasets:
+
+  financials:
+    endpoint: /financials
+    description: Quarterly Call Report aggregates, one row per institution and quarter end.
+    key: [CERT, REPDTE]
+    sort_by: CERT
+    partition:
+      field: REPDTE
+      filter: "REPDTE:{value}"
+    freshness: A quarter is indexed about 7 to 8 weeks after quarter end (Q2 2026 on 2026-08-19).
+    max_reject_rate: 0.0
+    fields:
+      CERT: {type: integer, nullable: false, description: FDIC certificate number}
+      REPDTE: {type: date, format: "%Y%m%d", nullable: false, description: Report date (quarter end)}
+      ASSET: {type: numeric, unit: usd_thousands, description: Total assets}
+      DEP: {type: numeric, unit: usd_thousands, description: Total deposits}
+      LNLSNET: {type: numeric, unit: usd_thousands, description: Net loans and leases}
+      EQ: {type: numeric, unit: usd_thousands, description: Total equity capital}
+      NETINC:
+        type: numeric
+        unit: usd_thousands
+        cumulative: year_to_date
+        description: Net income, cumulated since January 1. Quarterly flow = this quarter minus the previous one, except Q1.
+      INTINC:
+        type: numeric
+        unit: usd_thousands
+        cumulative: year_to_date
+        description: Total interest income (year-to-date, to be confirmed against the FDIC dictionary)
+      NCLNLS: {type: numeric, unit: usd_thousands, description: Noncurrent loans and leases}
+      RBCT1J: {type: numeric, unit: usd_thousands, description: Tier 1 (core) capital}
+      ROA: {type: numeric, unit: percent, description: Return on assets (annualized)}
+      ROE: {type: numeric, unit: percent, description: Return on equity (annualized)}
+      NIMY: {type: numeric, unit: percent, description: Net interest margin}
+      EEFFR: {type: numeric, unit: percent, description: Efficiency ratio}
+      EQV: {type: numeric, unit: percent, description: Equity capital to assets}
+      LNLSDEPR: {type: numeric, unit: percent, description: Net loans and leases to deposits}
+      NCLNLSR: {type: numeric, unit: percent, description: Noncurrent loans to loans}
+      NTLNLSR: {type: numeric, unit: percent, description: Net charge-offs to loans}
+      RBC1AAJ: {type: numeric, unit: percent, description: Tier 1 leverage ratio}
+    ratio_checks:
+      # Enforced by dbt tests: published ratio vs ratio recomputed from its components.
+      - {ratio: EQV, numerator: EQ, denominator: ASSET, tolerance: 0.01}
+      - ratio: LNLSDEPR
+        numerator: LNLSNET
+        denominator: DEP
+        tolerance: 0.01
+        note: The FDIC publishes 0 when DEP is 0 (seen on CERT 34065, 2026-06-30), so a zero denominator is skipped.
+
+  institutions:
+    endpoint: /institutions
+    description: Reference data of every FDIC-insured institution, active or not (27 835 rows on 2026-11-12).
+    key: [CERT]
+    sort_by: CERT
+    max_reject_rate: 0.0
+    fields:
+      CERT: {type: integer, nullable: false, description: FDIC certificate number}
+      NAME: {type: text, description: Legal name}
+      STALP: {type: text, description: State of the head office (two letters)}
+      STNAME: {type: text, description: State name of the head office}
+      CITY: {type: text, description: City of the head office}
+      ACTIVE: {type: integer, description: 1 when the institution is currently open and insured}
+      BKCLASS: {type: text, description: Institution class code}
+      REGAGNT: {type: text, description: Primary federal regulator}
+      CHARTER: {type: text, description: Charter type code}
+      FED_RSSD: {type: text, description: Federal Reserve RSSD identifier}
+      ESTYMD: {type: date, format: "%m/%d/%Y", description: Establishment date}
+      ENDEFYMD: {type: date, format: "%m/%d/%Y", description: End date, 12/31/9999 when still open}
+      INSDATE: {type: date, format: "%m/%d/%Y", description: Date of deposit insurance}
+      REPDTE: {type: date, format: "%m/%d/%Y", description: Last report date (format differs from financials)}
+
+  failures:
+    endpoint: /failures
+    description: Failed and assisted institutions since 1934 (4 117 rows on 2026-11-12).
+    # ID is the only unique identifier (checked 2026-11-12): 488 failures from 1934 to 1976
+    # have no CERT, FIN is "0" for many of them, and 44 CERTs appear twice.
+    key: [ID]
+    # ID cannot be requested or sorted on (HTTP 400) and no other field is unique, so the
+    # whole table is read in one page instead of paginating on an unstable order.
+    sort_by: FAILDATE
+    page_size: 10000
+    max_reject_rate: 0.0
+    fields:
+      ID: {type: text, nullable: false, requested: false, description: FDIC record identifier of the failure, always returned by the API}
+      CERT: {type: integer, description: FDIC certificate number, empty for 488 failures from 1934 to 1976}
+      NAME: {type: text, description: Institution name}
+      CITY: {type: text, description: City}
+      PSTALP: {type: text, description: State (two letters)}
+      FAILDATE: {type: date, format: "%m/%d/%Y", nullable: false, description: Failure date, month and day not zero-padded}
+      FAILYR: {type: integer, description: Failure year}
+      RESTYPE: {type: text, description: Resolution type (FAILURE or ASSISTANCE)}
+      RESTYPE1: {type: text, description: Resolution transaction type}
+      QBFASSET: {type: numeric, unit: usd_thousands, description: Total assets at failure}
+      QBFDEP: {type: numeric, unit: usd_thousands, description: Total deposits at failure}
+      COST: {type: numeric, unit: usd_thousands, description: Estimated loss to the insurance fund}
+      SAVR: {type: text, description: Insurance fund}
+      CHCLASS1: {type: text, description: Charter class}
+      BIDNAME: {type: text, description: Acquiring institution}

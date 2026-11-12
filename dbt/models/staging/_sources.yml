@@ -1,0 +1,25 @@
+version: 2
+
+sources:
+  - name: ops
+    description: Batch register written by the Python ingestion (run.py ingest).
+    schema: ops
+    tables:
+      - name: batch
+        description: One row per extraction attempt, successful or not.
+        columns:
+          - name: batch_id
+            data_tests: [unique, not_null]
+          - name: status
+            data_tests:
+              - accepted_values:
+                  arguments:
+                    values: [running, extracted, failed, loaded, duplicate]
+
+  - name: raw
+    description: Payloads exactly as delivered by the FDIC API, one row per batch and record.
+    schema: raw
+    tables:
+      - name: fdic_financials
+      - name: fdic_institutions
+      - name: fdic_failures

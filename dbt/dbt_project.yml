@@ -1,0 +1,16 @@
+name: fdic_dwh
+version: "0.1.0"
+config-version: 2
+profile: fdic_dwh
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+target-path: target
+clean-targets: [target]
+
+models:
+  fdic_dwh:
+    staging:
+      +schema: staging
+      +materialized: view

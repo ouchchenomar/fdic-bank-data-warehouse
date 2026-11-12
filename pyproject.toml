@@ -1,0 +1,19 @@
+[project]
+name = "fdic-dwh"
+version = "0.1.0"
+description = "Industrialized ingestion of FDIC quarterly bank filings"
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "--basetemp=.pytest_tmp"
+markers = ["db: needs the local PostgreSQL started with docker compose"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]

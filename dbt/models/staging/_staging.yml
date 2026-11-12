@@ -1,0 +1,53 @@
+version: 2
+
+models:
+  - name: stg_fdic__financials
+    description: >
+      Typed quarterly filings (Call Report aggregates). One row per loaded batch and
+      (cert, report_date): a quarter extracted twice with different content keeps both versions.
+    columns:
+      - name: batch_record_id
+        data_tests: [unique, not_null]
+      - name: cert
+        description: >
+          57 filers (332 filings, 2025-03-31 to 2026-06-30) are absent from the institutions
+          endpoint on 2026-11-12. Reported as a warning until the cause is documented (DWH-02).
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_fdic__institutions')
+                field: cert
+              config:
+                severity: warn
+      - name: report_date
+        data_tests: [not_null]
+      - name: net_income_ytd_kusd
+        description: Cumulated since January 1. Quarterly flow = this quarter minus the previous one, except Q1.
+
+  - name: stg_fdic__institutions
+    description: Typed reference data of every FDIC-insured institution, one row per loaded batch and cert.
+    columns:
+      - name: batch_record_id
+        data_tests: [unique, not_null]
+      - name: cert
+        data_tests: [not_null]
+
+  - name: stg_fdic__failures
+    description: Typed bank failures since 1934, one row per loaded batch and FDIC record ID.
+    columns:
+      - name: batch_record_id
+        data_tests: [unique, not_null]
+      - name: failure_id
+        data_tests: [not_null]
+      - name: failure_date
+        data_tests: [not_null]
+      - name: cert
+        description: Empty for 488 failures from 1934 to 1976.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_fdic__institutions')
+                field: cert
+              config:
+                severity: warn

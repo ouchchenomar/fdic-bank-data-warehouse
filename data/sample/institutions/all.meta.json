@@ -1,0 +1,22 @@
+{
+  "source_batch_id": "institutions_all_20261112T192224780Z",
+  "source_index_name": "institutions_20261106100008",
+  "source_index_created_at": "2026-11-06T13:05:30+00:00",
+  "certs": [
+    628,
+    3510,
+    3511,
+    5520,
+    6548,
+    7213,
+    25744,
+    25796,
+    28611,
+    28722,
+    34065,
+    57488,
+    57834
+  ],
+  "rows": 12,
+  "rows_in_source_batch": 27835
+}

@@ -1,0 +1,6 @@
+requests==2.34.2
+psycopg[binary]==3.3.9
+PyYAML==6.0.3
+python-dotenv==1.2.4
+dbt-core==1.12.7
+dbt-postgres==1.11.0
