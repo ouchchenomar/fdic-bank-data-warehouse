@@ -7,7 +7,7 @@ import psycopg
 _COLUMNS = [
     ("batch_id", 40),
     ("status", 9),
-    ("mode", 7),
+    ("mode", 9),
     ("rows_announced", 9),
     ("rows_extracted", 9),
     ("rows_rejected", 8),

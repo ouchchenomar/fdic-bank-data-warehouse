@@ -1,0 +1,21 @@
+snapshots:
+  - name: snp_fdic__institutions
+    description: >
+      SCD2 history of the institution attributes. A new row opens when one of the checked
+      columns changes between two dbt runs. dbt_valid_from is the time the warehouse saw the
+      change, not the date it took effect at the FDIC.
+    relation: ref('int_fdic__institutions_latest')
+    config:
+      schema: snapshots
+      unique_key: cert
+      strategy: check
+      check_cols:
+        - institution_name
+        - state_code
+        - city
+        - is_active
+        - bank_class
+        - primary_regulator
+        - charter_code
+        - end_date
+      hard_deletes: invalidate

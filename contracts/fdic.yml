@@ -2,7 +2,10 @@
 # Every field below was checked against the live API on 2026-11-12.
 # Units: usd_thousands = thousands of US dollars, percent = percentage points.
 
-version: 1
+# Version 2 (2026-11-12): financials also carry the institution attributes reported with
+# each filing, because 57 filers (class NC, mostly non-insured trust companies) are absent
+# from /institutions. A batch records the contract version it was validated against.
+version: 2
 
 source:
   name: FDIC BankFind Suite API
@@ -25,6 +28,10 @@ datasets:
     fields:
       CERT: {type: integer, nullable: false, description: FDIC certificate number}
       REPDTE: {type: date, format: "%Y%m%d", nullable: false, description: Report date (quarter end)}
+      NAMEFULL: {type: text, description: Full legal name as reported with the filing}
+      STALP: {type: text, description: State of the head office at the report date (empty for some foreign branches)}
+      CITY: {type: text, description: City of the head office at the report date}
+      BKCLASS: {type: text, description: Institution class at the report date (NC = not in /institutions, mostly trust companies)}
       ASSET: {type: numeric, unit: usd_thousands, description: Total assets}
       DEP: {type: numeric, unit: usd_thousands, description: Total deposits}
       LNLSNET: {type: numeric, unit: usd_thousands, description: Net loans and leases}

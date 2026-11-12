@@ -76,7 +76,7 @@ def ingest(
     started = datetime.now(UTC)
     batch_id = make_batch_id(spec.name, label, started)
     registry.create_batch(conn, batch_id=batch_id, dataset=spec.name, partition=label,
-                          mode=source.mode)
+                          mode=source.mode, contract_version=spec.contract_version)
     conn.commit()
 
     try:
@@ -89,6 +89,7 @@ def ingest(
             "dataset": spec.name,
             "partition": label,
             "mode": source.mode,
+            "contract_version": spec.contract_version,
             "extracted_at": started.isoformat(),
             "request_url": fetched.request_url,
             "request_params": fetched.request_params,

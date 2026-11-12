@@ -15,6 +15,11 @@ sources:
               - accepted_values:
                   arguments:
                     values: [running, extracted, failed, loaded, duplicate]
+          - name: mode
+            data_tests:
+              - accepted_values:
+                  arguments:
+                    values: [api, offline, simulated]
 
   - name: raw
     description: Payloads exactly as delivered by the FDIC API, one row per batch and record.

@@ -1,13 +1,13 @@
-from fdic_dwh.contract import validate_rows
+from conftest import fake_row
+from fdic_dwh.config import ROOT
+from fdic_dwh.contract import load_contract, validate_rows
+
+CONTRACT = ROOT / "contracts" / "fdic.yml"
 
 
 def fin_row(cert, **overrides):
-    row = {name: 1 for name in (
-        "ASSET", "DEP", "LNLSNET", "EQ", "NETINC", "INTINC", "NCLNLS", "RBCT1J", "ROA", "ROE",
-        "NIMY", "EEFFR", "EQV", "LNLSDEPR", "NCLNLSR", "NTLNLSR", "RBC1AAJ",
-    )}
-    row.update(CERT=cert, REPDTE="20260630", **overrides)
-    return row
+    return fake_row(load_contract(CONTRACT)["financials"], 1, CERT=cert, REPDTE="20260630",
+                    **overrides)
 
 
 def test_contract_declares_the_three_datasets(specs):

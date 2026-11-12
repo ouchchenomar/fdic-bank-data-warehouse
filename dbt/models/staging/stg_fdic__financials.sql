@@ -2,7 +2,7 @@
 -- Every version observed is kept: picking the current one happens downstream.
 
 with loaded_batches as (
-    select batch_id, mode, source_index_name, started_at
+    select batch_id, partition_value, mode, contract_version, source_index_name, started_at
     from {{ source('ops', 'batch') }}
     where dataset = 'financials' and status = 'loaded'
 )
@@ -10,14 +10,24 @@ with loaded_batches as (
 select
     r.batch_id || '|' || r.record_key        as batch_record_id,
     r.batch_id,
+    b.partition_value                         as batch_partition,
     b.mode                                    as batch_mode,
+    b.mode = 'simulated'                      as is_simulated,
+    b.contract_version,
     b.source_index_name,
     b.started_at                              as batch_started_at,
     r.record_key,
     r.row_hash,
+    r.payload,
 
     {{ json_int('CERT') }}                    as cert,
     {{ json_date('REPDTE', 'YYYYMMDD') }}     as report_date,
+
+    -- attributes reported with the filing (contract v2; NULL in version 1 batches)
+    {{ json_text('NAMEFULL') }}               as institution_name,
+    {{ json_text('STALP') }}                  as state_code,
+    {{ json_text('CITY') }}                   as city,
+    {{ json_text('BKCLASS') }}                as bank_class,
 
     -- amounts in thousands of US dollars
     {{ json_num('ASSET') }}                   as total_assets_kusd,

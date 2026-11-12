@@ -11,15 +11,13 @@ models:
       - name: cert
         description: >
           57 filers (332 filings, 2025-03-31 to 2026-06-30) are absent from the institutions
-          endpoint on 2026-11-12. Reported as a warning until the cause is documented (DWH-02).
-        data_tests:
-          - not_null
-          - relationships:
-              arguments:
-                to: ref('stg_fdic__institutions')
-                field: cert
-              config:
-                severity: warn
+          endpoint: all have bank class NC, mostly non-insured trust companies. Their
+          attributes come from the filing itself (contract v2), see dim_institution.
+        data_tests: [not_null]
+      - name: payload
+        description: Payload as delivered, kept for the field-level revision report.
+      - name: is_simulated
+        description: True for a batch made by run.py simulate-revision (REC-04), never a real FDIC value.
       - name: report_date
         data_tests: [not_null]
       - name: net_income_ytd_kusd

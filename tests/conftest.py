@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import datetime
+
 import psycopg
 import pytest
 from psycopg import sql
@@ -12,6 +14,20 @@ from fdic_dwh.db import apply_migrations
 @pytest.fixture(scope="session")
 def specs():
     return load_contract(ROOT / "contracts" / "fdic.yml")
+
+
+def fake_row(spec, number, **values):
+    """A row with every contract field filled, numbers set to `number`."""
+    row = {}
+    for f in spec.fields.values():
+        if f.type in ("integer", "numeric"):
+            row[f.name] = number
+        elif f.type == "date":
+            row[f.name] = datetime(2026, 6, 30).strftime(f.date_format)
+        else:
+            row[f.name] = f"{f.name.lower()} {number}"
+    row.update(values)
+    return row
 
 
 @pytest.fixture(scope="session")
@@ -40,7 +56,7 @@ def pg(test_conninfo):
     with psycopg.connect(test_conninfo) as conn:
         conn.execute(
             "truncate raw.fdic_financials, raw.fdic_institutions, raw.fdic_failures,"
-            " ops.batch_reject, ops.batch"
+            " ops.batch_reject, ops.batch, ops.publication"
         )
         conn.commit()
         yield conn

@@ -1,0 +1,113 @@
+version: 2
+
+models:
+  - name: dim_institution
+    description: >
+      One row per institution: every CERT of the institutions endpoint, plus the filers it
+      does not list (class NC, mostly non-insured trust companies, attribute_source = filings).
+    columns:
+      - name: cert
+        data_tests: [unique, not_null]
+      - name: institution_name
+        data_tests: [not_null]
+      - name: attribute_source
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [institutions, filings]
+
+  - name: dim_institution_history
+    description: SCD2 history of the institution attributes (snapshot snp_fdic__institutions).
+    columns:
+      - name: history_id
+        data_tests: [unique, not_null]
+      - name: cert
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_institution')
+                field: cert
+
+  - name: fct_filings
+    description: >
+      Current version of each quarterly filing (latest loaded batch of its quarter), with
+      quarterly flows derived from the year-to-date amounts and the lineage of every value.
+    columns:
+      - name: filing_id
+        data_tests: [unique, not_null]
+      - name: cert
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_institution')
+                field: cert
+      - name: report_date
+        data_tests: [not_null]
+      - name: net_income_qtr_kusd
+        description: >
+          Net income of the quarter alone: equals the year-to-date amount in Q1, otherwise the
+          difference with the previous quarter. NULL when the previous quarter is missing.
+      - name: flow_basis
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [q1_equals_ytd, ytd_difference, previous_quarter_missing]
+      - name: batch_id
+        description: Batch the current values come from.
+        data_tests: [not_null]
+      - name: version_count
+        description: Number of distinct contents observed for this filing, see fct_filing_versions.
+        data_tests: [not_null]
+
+  - name: fct_filing_versions
+    description: >
+      One row per distinct content of a filing, oldest first (DWH-04). change_kind says why a
+      version exists: initial load, contract change (fields added, values unchanged),
+      simulated correction, restoration after a simulation, or a revision by the FDIC.
+    columns:
+      - name: filing_version_id
+        data_tests: [unique, not_null]
+      - name: filing_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('fct_filings')
+                field: filing_id
+      - name: change_kind
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [initial, contract_change, simulated, restored_after_simulation, revision]
+
+  - name: fct_failures
+    description: >
+      Bank failures since 1934 (latest loaded batch), with the last filing the warehouse holds
+      before each failure. 488 failures from 1934 to 1976 have no CERT.
+    columns:
+      - name: failure_id
+        data_tests: [unique, not_null]
+      - name: cert
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_institution')
+                field: cert
+      - name: failure_date
+        data_tests: [not_null]
+
+  - name: rpt_filing_revisions
+    description: >
+      Field-level differences between two versions of a filing: source field, previous value,
+      new value and numeric delta. Contract changes are left out.
+    columns:
+      - name: revision_id
+        data_tests: [unique, not_null]
+
+  - name: rpt_batches
+    description: Batch register for the operations page, with is_current for the batches in use.
+    columns:
+      - name: batch_id
+        data_tests: [unique, not_null]

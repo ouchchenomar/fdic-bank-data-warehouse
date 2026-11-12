@@ -1,5 +1,5 @@
 {
-  "source_batch_id": "financials_20250930_20261112T192201263Z",
+  "source_batch_id": "financials_20250930_20261112T194212129Z",
   "source_index_name": "risview_20260819185831",
   "source_index_created_at": "2026-08-19T18:58:33+00:00",
   "certs": [
@@ -13,10 +13,11 @@
     25796,
     28611,
     28722,
+    32961,
     34065,
     57488,
     57834
   ],
-  "rows": 11,
+  "rows": 12,
   "rows_in_source_batch": 4452
 }

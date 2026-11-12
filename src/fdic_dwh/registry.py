@@ -31,12 +31,18 @@ _UPDATABLE = {
 
 
 def create_batch(
-    conn: psycopg.Connection, *, batch_id: str, dataset: str, partition: str, mode: str
+    conn: psycopg.Connection,
+    *,
+    batch_id: str,
+    dataset: str,
+    partition: str,
+    mode: str,
+    contract_version: int,
 ) -> None:
     conn.execute(
-        "insert into ops.batch (batch_id, dataset, partition_value, mode, status)"
-        " values (%s, %s, %s, %s, 'running')",
-        (batch_id, dataset, partition, mode),
+        "insert into ops.batch (batch_id, dataset, partition_value, mode, status, contract_version)"
+        " values (%s, %s, %s, %s, 'running', %s)",
+        (batch_id, dataset, partition, mode, contract_version),
     )
 
 

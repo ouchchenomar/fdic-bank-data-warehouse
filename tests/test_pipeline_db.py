@@ -6,21 +6,20 @@ import copy
 
 import pytest
 
+from conftest import fake_row
+from fdic_dwh.config import ROOT
+from fdic_dwh.contract import load_contract
 from fdic_dwh.pipeline import ingest
 from fdic_dwh.sources import FetchResult
 
 pytestmark = pytest.mark.db
 
-FIELDS = ("ASSET", "DEP", "LNLSNET", "EQ", "NETINC", "INTINC", "NCLNLS", "RBCT1J", "ROA", "ROE",
-          "NIMY", "EEFFR", "EQV", "LNLSDEPR", "NCLNLSR", "NTLNLSR", "RBC1AAJ")
+FINANCIALS = load_contract(ROOT / "contracts" / "fdic.yml")["financials"]
 
 
 def rows(n=3, overrides=None):
-    out = []
-    for cert in range(1, n + 1):
-        row = {name: cert * 100 for name in FIELDS}
-        row.update(CERT=cert, REPDTE="20260630")
-        out.append(row)
+    out = [fake_row(FINANCIALS, cert * 100, CERT=cert, REPDTE="20260630")
+           for cert in range(1, n + 1)]
     for (cert, field), value in (overrides or {}).items():
         out[cert - 1][field] = value
     return out

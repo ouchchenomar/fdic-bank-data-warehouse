@@ -26,6 +26,7 @@ DEFAULT_CERTS = [
     25744,  # failed 2026-07-17
     34065,  # zero deposits, FDIC publishes a 0 loans-to-deposits ratio
     57834,  # small bank, zero loans
+    32961,  # trust company (class NC) absent from /institutions
 ]
 
 

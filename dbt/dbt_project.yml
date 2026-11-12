@@ -6,6 +6,7 @@ profile: fdic_dwh
 model-paths: ["models"]
 macro-paths: ["macros"]
 test-paths: ["tests"]
+snapshot-paths: ["snapshots"]
 target-path: target
 clean-targets: [target]
 
@@ -14,3 +15,9 @@ models:
     staging:
       +schema: staging
       +materialized: view
+    intermediate:
+      +schema: intermediate
+      +materialized: table
+    marts:
+      +schema: marts
+      +materialized: table

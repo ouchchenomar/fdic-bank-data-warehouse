@@ -1,0 +1,21 @@
+version: 2
+
+models:
+  - name: int_fdic__filing_versions
+    description: >
+      Every distinct content observed for a filing, with the payload before and after.
+      Feeds fct_filing_versions and the field-level report rpt_filing_revisions.
+    columns:
+      - name: filing_version_id
+        data_tests: [unique, not_null]
+      - name: change_kind
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [initial, contract_change, simulated, restored_after_simulation, revision]
+
+  - name: int_fdic__institutions_latest
+    description: Institutions of the latest loaded batch, input of the snapshot snp_fdic__institutions.
+    columns:
+      - name: cert
+        data_tests: [unique, not_null]

@@ -37,6 +37,7 @@ class DatasetSpec:
     partition_filter: str | None = None
     max_reject_rate: float = 0.0
     page_size: int | None = None  # overrides the default when no stable sort key exists
+    contract_version: int = 1
 
     @property
     def requested_fields(self) -> list[str]:
@@ -92,6 +93,7 @@ def load_contract(path: Path) -> dict[str, DatasetSpec]:
             partition_filter=partition.get("filter"),
             max_reject_rate=float(ds.get("max_reject_rate", 0.0)),
             page_size=ds.get("page_size"),
+            contract_version=int(doc.get("version", 1)),
         )
     return datasets
 
