@@ -1,0 +1,14 @@
+table Actualisation
+	isHidden
+	lineageTag: 9bdc84d9-8076-5a13-8ab1-d48ab5e54d64
+
+	column actualise_le
+		dataType: dateTime
+		sourceColumn: actualise_le
+		formatString: dd/MM/yyyy HH:mm
+		summarizeBy: none
+
+	partition Actualisation = m
+		mode: import
+		source =
+				PostgreSQL.Database(ServeurPostgreSQL, BasePostgreSQL, [Query="SELECT (now() at time zone 'UTC') AS actualise_le"])

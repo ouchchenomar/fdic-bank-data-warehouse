@@ -7,6 +7,14 @@ sources:
     tables:
       - name: batch
         description: One row per extraction attempt, successful or not.
+        config:
+          # Pipeline liveness: the last extraction that reached the source and passed the
+          # contract (loaded or identical to the last load). Run: run.py dbt source freshness
+          loaded_at_field: finished_at
+          freshness:
+            warn_after: {count: 2, period: day}
+            error_after: {count: 8, period: day}
+            filter: "status in ('loaded', 'duplicate')"
         columns:
           - name: batch_id
             data_tests: [unique, not_null]

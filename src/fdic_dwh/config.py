@@ -23,6 +23,7 @@ class Settings:
     pg_db: str
     pg_user: str
     pg_password: str
+    reader_password: str | None = None
 
     @property
     def conninfo(self) -> str:
@@ -59,4 +60,5 @@ def load_settings() -> Settings:
         pg_db=os.getenv("POSTGRES_DB", "fdic_dwh"),
         pg_user=os.getenv("POSTGRES_USER", "fdic"),
         pg_password=os.getenv("POSTGRES_PASSWORD", ""),
+        reader_password=os.getenv("FDIC_READER_PASSWORD") or None,
     )

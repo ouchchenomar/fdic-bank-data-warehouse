@@ -17,7 +17,9 @@ last_filing as (
         p.total_assets_kusd       as last_total_assets_kusd,
         p.equity_to_assets_pct    as last_equity_to_assets_pct,
         p.tier1_leverage_ratio_pct as last_tier1_leverage_ratio_pct,
-        p.roa_pct                 as last_roa_pct
+        p.roa_pct                 as last_roa_pct,
+        p.noncurrent_loans_ratio_pct as last_noncurrent_loans_ratio_pct,
+        p.signal_count            as last_signal_count
     from failures as f
     join {{ ref('fct_filings') }} as p
         on p.cert = f.cert and p.report_date < f.failure_date
@@ -46,6 +48,8 @@ select
     l.last_equity_to_assets_pct,
     l.last_tier1_leverage_ratio_pct,
     l.last_roa_pct,
+    l.last_noncurrent_loans_ratio_pct,
+    l.last_signal_count,
     f.batch_id
 from failures as f
 left join last_filing as l on l.failure_id = f.failure_id

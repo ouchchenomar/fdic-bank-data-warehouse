@@ -24,7 +24,10 @@ PUBLISHED_TABLES = (
     "fct_filings",
     "fct_filing_versions",
     "fct_failures",
+    "rpt_failure_signals",
+    "rpt_watchlist",
     "rpt_filing_revisions",
+    "rpt_reconciliation_qbp",
     "rpt_batches",
 )
 

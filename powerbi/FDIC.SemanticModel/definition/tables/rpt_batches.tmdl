@@ -1,0 +1,146 @@
+table rpt_batches
+	lineageTag: 58dd573f-598e-5c84-9a3d-ab97dcaa236a
+
+	column batch_id
+		dataType: string
+		lineageTag: 1e52909e-6b03-54c3-9551-0c15d5d02813
+		summarizeBy: none
+		sourceColumn: batch_id
+
+	column dataset
+		dataType: string
+		lineageTag: 9e42fa54-e6f6-5be1-86ce-9b9424c3feef
+		summarizeBy: none
+		sourceColumn: dataset
+
+	column partition_value
+		dataType: string
+		lineageTag: 7d160c38-a36b-5b1e-ac04-683e086d86d1
+		summarizeBy: none
+		sourceColumn: partition_value
+
+	column mode
+		dataType: string
+		lineageTag: ec7e310c-0cf5-5376-9032-0b47fb43d18e
+		summarizeBy: none
+		sourceColumn: mode
+
+	column status
+		dataType: string
+		lineageTag: 363c5145-210a-5e25-847c-6a857a8f27c7
+		summarizeBy: none
+		sourceColumn: status
+
+	column contract_version
+		dataType: int64
+		lineageTag: 9ed84a1b-f60a-5a71-8bae-b647f3465688
+		summarizeBy: none
+		sourceColumn: contract_version
+		formatString: 0
+
+	column source_index_name
+		dataType: string
+		lineageTag: aceb5b81-19e0-5c47-aa45-ccb139060c14
+		summarizeBy: none
+		sourceColumn: source_index_name
+
+	column source_index_created_at
+		dataType: dateTime
+		lineageTag: b5daad88-c525-5223-a93d-6baa653d55f8
+		summarizeBy: none
+		sourceColumn: source_index_created_at
+		isHidden
+		formatString: dd/MM/yyyy HH:mm
+
+	column pages
+		dataType: int64
+		lineageTag: 871e37f3-8864-5e55-9dc3-571d8cc25d45
+		summarizeBy: none
+		sourceColumn: pages
+		formatString: 0
+
+	column rows_announced
+		dataType: int64
+		lineageTag: d2c13243-2802-5af2-bdee-4a6c5c045cae
+		summarizeBy: none
+		sourceColumn: rows_announced
+		formatString: 0
+
+	column rows_extracted
+		dataType: int64
+		lineageTag: f1196471-547c-51c6-89da-420c02dd450d
+		summarizeBy: none
+		sourceColumn: rows_extracted
+		formatString: 0
+
+	column rows_rejected
+		dataType: int64
+		lineageTag: 1f1cc63e-6476-5bcf-8539-d55d97020e31
+		summarizeBy: none
+		sourceColumn: rows_rejected
+		formatString: 0
+
+	column rows_loaded
+		dataType: int64
+		lineageTag: 9e1a15fd-3884-58eb-8ffb-6e9e0c0abaae
+		summarizeBy: none
+		sourceColumn: rows_loaded
+		formatString: 0
+
+	column duplicate_of
+		dataType: string
+		lineageTag: ac7f01db-9d1e-578b-aed9-eb4d3fa3027f
+		summarizeBy: none
+		sourceColumn: duplicate_of
+
+	column error
+		dataType: string
+		lineageTag: 9c9e4059-e672-5b9c-a7df-f4f1df1de5b3
+		summarizeBy: none
+		sourceColumn: error
+
+	column file_sha256
+		dataType: string
+		lineageTag: 6666b565-9a7e-5ebf-bbbc-c1fa55040a12
+		summarizeBy: none
+		sourceColumn: file_sha256
+		isHidden
+
+	column started_at
+		dataType: dateTime
+		lineageTag: b2dc9c02-3b51-5349-87a0-ed465e52e94c
+		summarizeBy: none
+		sourceColumn: started_at
+		formatString: dd/MM/yyyy HH:mm
+
+	column finished_at
+		dataType: dateTime
+		lineageTag: 22c99bda-d999-5e4d-a626-d08ad876b84c
+		summarizeBy: none
+		sourceColumn: finished_at
+		formatString: dd/MM/yyyy HH:mm
+
+	column duration_seconds
+		dataType: double
+		lineageTag: 9eb3f401-1335-54ec-8d5d-8adfcdc98a82
+		summarizeBy: none
+		sourceColumn: duration_seconds
+		formatString: #,0.###
+
+	column is_current
+		dataType: boolean
+		lineageTag: ec48b348-0ed6-5152-8943-b2720687222b
+		summarizeBy: none
+		sourceColumn: is_current
+
+	partition rpt_batches = m
+		mode: import
+		source =
+				let
+				    Base = PostgreSQL.Database(ServeurPostgreSQL, BasePostgreSQL),
+				    Donnees = Base{[Schema="published", Item="rpt_batches"]}[Data],
+				    Types = Table.TransformColumnTypes(Donnees, {{"source_index_created_at", type datetime}, {"started_at", type datetime}, {"finished_at", type datetime}})
+				in
+				    Types
+
+	annotation PBI_ResultType = Table

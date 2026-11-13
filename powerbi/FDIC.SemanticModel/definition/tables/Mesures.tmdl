@@ -1,0 +1,111 @@
+table Mesures
+	lineageTag: 5d01c66a-f48e-5753-a57e-48dcac86f0b3
+
+	/// Banques déclarantes au dernier trimestre du contexte.
+	measure Banques = VAR d = MAX(fct_filings[report_date]) RETURN CALCULATE(DISTINCTCOUNT(fct_filings[cert]), fct_filings[report_date] = d)
+		lineageTag: 73be0140-8226-5b8a-a5de-4ec347dc0276
+		displayFolder: Bilan
+		formatString: #,0
+
+	/// Total des actifs, en milliards de dollars, au dernier trimestre du contexte.
+	measure ActifsMd = VAR d = MAX(fct_filings[report_date]) RETURN DIVIDE(CALCULATE(SUM(fct_filings[total_assets_kusd]), fct_filings[report_date] = d), 1000000)
+		lineageTag: 13ebf5fa-575d-5cd5-949e-2413355610dd
+		displayFolder: Bilan
+		formatString: #,0.0
+
+	/// Total des dépôts, en milliards de dollars.
+	measure DepotsMd = VAR d = MAX(fct_filings[report_date]) RETURN DIVIDE(CALCULATE(SUM(fct_filings[total_deposits_kusd]), fct_filings[report_date] = d), 1000000)
+		lineageTag: 87308e73-7d61-53fd-aa18-ceb35f059c70
+		displayFolder: Bilan
+		formatString: #,0.0
+
+	/// Résultat net du trimestre seul (flux), en milliards de dollars.
+	measure ResultatTrimestreMd = VAR d = MAX(fct_filings[report_date]) RETURN DIVIDE(CALCULATE(SUM(fct_filings[net_income_qtr_kusd]), fct_filings[report_date] = d), 1000000)
+		lineageTag: f239a34c-1351-57fc-8148-93b04e51d1e0
+		displayFolder: Bilan
+		formatString: #,0.00
+
+	/// Fonds propres / actifs, agrégé (somme sur somme).
+	measure FondsPropresSurActifs = VAR d = MAX(fct_filings[report_date]) RETURN DIVIDE(CALCULATE(SUM(fct_filings[equity_capital_kusd]), fct_filings[report_date] = d), CALCULATE(SUM(fct_filings[total_assets_kusd]), fct_filings[report_date] = d))
+		lineageTag: 74be080d-66d4-512d-8597-e392e3e01142
+		displayFolder: Bilan
+		formatString: 0.00%
+
+	/// ROA publié par la FDIC ; moyenne simple si plusieurs banques.
+	measure ROAPublie = VAR d = MAX(fct_filings[report_date]) RETURN DIVIDE(CALCULATE(AVERAGE(fct_filings[roa_pct]), fct_filings[report_date] = d), 100)
+		lineageTag: c372789f-6be6-5b5c-9566-fd5e4a43e4ad
+		displayFolder: Bilan
+		formatString: 0.00%
+
+	/// Taux de prêts non performants publié ; moyenne simple si plusieurs banques.
+	measure PretsNonPerformants = VAR d = MAX(fct_filings[report_date]) RETURN DIVIDE(CALCULATE(AVERAGE(fct_filings[noncurrent_loans_ratio_pct]), fct_filings[report_date] = d), 100)
+		lineageTag: 99d08194-6f15-536f-8d86-9b12b4c48e37
+		displayFolder: Bilan
+		formatString: 0.00%
+
+	/// Dernier trimestre du contexte.
+	measure DonneesAu = "Données au " & FORMAT(MAX(fct_filings[report_date]), "dd/MM/yyyy")
+		lineageTag: c6815792-3652-55a4-b03b-95139f265146
+		displayFolder: Bilan
+
+	/// Faillites dont au moins une déclaration est dans l'entrepôt.
+	measure FaillitesCouvertes = COALESCE(DISTINCTCOUNT(rpt_failure_signals[failure_id]), 0)
+		lineageTag: 423ea733-ba74-5b98-975a-35f9d3c1201c
+		displayFolder: Alerte précoce
+		formatString: 0
+
+	/// Faillites avec au moins deux signaux dans la dernière déclaration.
+	measure FaillitesSignalees = COALESCE(CALCULATE(DISTINCTCOUNT(rpt_failure_signals[failure_id]), rpt_failure_signals[quarters_before_failure] = 1, rpt_failure_signals[signal_count] >= 2), 0)
+		lineageTag: 45a80a83-934c-5dee-9836-0c109b4c2590
+		displayFolder: Alerte précoce
+		formatString: 0
+
+	/// Banques du dernier trimestre avec au moins deux signaux.
+	measure ListeSurveillance = COALESCE(COUNTROWS(rpt_watchlist), 0)
+		lineageTag: f63e6a2e-d2c3-5a71-8fe6-c7e8b85dc492
+		displayFolder: Alerte précoce
+		formatString: 0
+
+	/// Banques du dernier trimestre avec les trois signaux.
+	measure TroisSignaux = COALESCE(CALCULATE(COUNTROWS(rpt_watchlist), rpt_watchlist[signal_count] = 3), 0)
+		lineageTag: d3bc5865-de17-5164-983f-9e153e41c6aa
+		displayFolder: Alerte précoce
+		formatString: 0
+
+	/// Lots chargés.
+	measure LotsCharges = COALESCE(CALCULATE(COUNTROWS(rpt_batches), rpt_batches[status] = "loaded"), 0)
+		lineageTag: 20d342fd-c6d9-55fb-9351-8b6b60060aa8
+		displayFolder: Qualité
+		formatString: 0
+
+	/// Rejeux identiques au dernier lot chargé : tracés, rien de chargé.
+	measure LotsDoublons = COALESCE(CALCULATE(COUNTROWS(rpt_batches), rpt_batches[status] = "duplicate"), 0)
+		lineageTag: 7de2b253-e32f-5519-a3cf-6d16f253b9f7
+		displayFolder: Qualité
+		formatString: 0
+
+	/// Lots refusés (contrat, couverture, trimestre non publié).
+	measure LotsEchecs = COALESCE(CALCULATE(COUNTROWS(rpt_batches), rpt_batches[status] = "failed"), 0)
+		lineageTag: 3bb30edd-50ce-5a90-938a-c997fadf78cc
+		displayFolder: Qualité
+		formatString: 0
+
+	/// Contrôles QBP conformes (égaux ou dans la tolérance) sur le total.
+	measure Rapprochements = FORMAT(COALESCE(CALCULATE(COUNTROWS(rpt_reconciliation_qbp), rpt_reconciliation_qbp[status] IN {"match", "within_tolerance"}), 0), "0") & " / " & FORMAT(COALESCE(COUNTROWS(rpt_reconciliation_qbp), 0), "0")
+		lineageTag: a9ad19f2-33d1-5f2a-813f-35d8636b80d0
+		displayFolder: Qualité
+
+	/// Heure de la dernière actualisation du modèle.
+	measure ActualiseLe = "Actualisé le " & FORMAT(MAX(Actualisation[actualise_le]), "dd/MM/yyyy HH:mm") & " UTC"
+		lineageTag: b43c3e84-6b58-5d77-99ae-662a223a2349
+		displayFolder: Qualité
+
+	column _Mesures
+		dataType: int64
+		isHidden
+		sourceColumn: _Mesures
+		summarizeBy: none
+
+	partition Mesures = m
+		mode: import
+		source = #table(type table [_Mesures = Int64.Type], {{1}})

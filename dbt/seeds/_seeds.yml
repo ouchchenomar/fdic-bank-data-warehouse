@@ -1,0 +1,18 @@
+version: 2
+
+seeds:
+  - name: qbp_reference
+    description: >
+      Industry totals published by the FDIC in its Quarterly Banking Profile (press release of
+      each quarter, read on 2026-11-12): number of insured commercial banks and savings
+      institutions, and aggregate net income of the quarter in billions of US dollars, rounded
+      to 0.1 by the FDIC. Independent of the API: it is the FDIC's own published figure.
+    config:
+      column_types:
+        report_date: date
+        insured_institutions: integer
+        net_income_bn: numeric
+        source_url: text
+    columns:
+      - name: report_date
+        data_tests: [unique, not_null]

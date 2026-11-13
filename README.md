@@ -4,7 +4,17 @@
 
 This project ingests the quarterly filings of about 4,400 U.S. banks, published by the FDIC, into a PostgreSQL warehouse. Every figure can be traced back to the file and the run that loaded it. Replaying a file never duplicates data. A revised value becomes a new version without erasing the old one. The dashboard reads only what passed every test: a build that fails leaves the last published state untouched.
 
-**Status (2026-11-12): weeks 1 and 2 of 3 are done.** Week 1 delivered ingestion, the batch register and the data contract. Week 2 added version history, the SCD2 dimension, quarterly flows, the marts and the gated publication. Everything runs on real data, and the test scenario is in [docs/recette.fr.md](docs/recette.fr.md) (French). The [roadmap](#roadmap) lists what comes next.
+**Status (2026-11-13): the three planned weeks are delivered.**
+- Week 1: ingestion, batch register and data contract.
+- Week 2: version history, SCD2 dimension, quarterly flows, marts and gated publication.
+- Week 3: Airflow orchestration, Power BI dashboard with an early-warning page, reconciliation with the FDIC's Quarterly Banking Profile, runbook and CI checks.
+
+Everything runs on real data. Documentation:
+- the test scenario: [docs/recette.fr.md](docs/recette.fr.md) (French);
+- the runbook: [docs/runbook.fr.md](docs/runbook.fr.md) (French);
+- the **dbt documentation and lineage graph**: [ouchchenomar.github.io/fdic-bank-data-warehouse/](https://ouchchenomar.github.io/fdic-bank-data-warehouse/).
+
+Two items wait on outside events, see [what remains](#what-remains).
 
 ## What is loaded
 
@@ -20,6 +30,7 @@ The data contract ([contracts/fdic.yml](contracts/fdic.yml), version 2) states e
 
 ```mermaid
 flowchart LR
+    AF{{Airflow DAG<br/>daily, one task per quarter}} -.->|run.py| PY
     API[FDIC BankFind API] -->|paginated, retried| PY[Python ingestion]
     SAMPLE[(Offline sample)] -.->|--offline| PY
     PY --> FILES[(Canonical raw files<br/>+ manifest + SHA-256)]
@@ -30,6 +41,8 @@ flowchart LR
     INT --> MARTS[(marts)]
     MARTS -->|every test passes| PUB[(published views<br/>→ pub_timestamp)]
     MARTS -.->|a test fails| REF[refused:<br/>published unchanged]
+    QBP[(QBP reference<br/>dbt seed)] --> MARTS
+    PUB -->|read-only role| PBI[Power BI]
 ```
 
 1. **Extraction.** Pages of 1,000 rows are sorted on a stable key. On 429, 5xx and network errors the client retries with exponential backoff and honours `Retry-After`. If the FDIC rebuilds its index in the middle of a pagination, the batch is refused.
@@ -52,6 +65,17 @@ flowchart LR
    - If any test fails, the attempt is logged as `refused` and the published views do not change.
    - Otherwise the marts are copied to a new schema `pub_<timestamp>`, and the views of the `published` schema are switched to it in one transaction.
    - The last three publications are kept, and `publish --rollback` goes back to the previous one.
+9. **Orchestration.** The Airflow DAG `fdic_warehouse` runs every day at 07:00 UTC:
+   - it extracts the institutions, the failures, and every quarter ended since the latest one loaded, with one task per quarter;
+   - on Mondays it also extracts the four latest quarters again, to catch revisions;
+   - then it publishes.
+
+   A quarter the FDIC has not published yet ends as *skipped*, not failed. Each task runs a `run.py` command, the same as by hand ([ADR 0004](docs/adr/0004-airflow-orchestration-of-cli-commands.md)).
+10. **Dashboard.** Power BI reads the `published` views with the role `fdic_reader`, which cannot read anything else. The script `powerbi/build_powerbi.py` generates the project (`powerbi/FDIC.pbip`: a TMDL model and a PBIR report) from the published schema. It has four pages:
+    - overview, with state and asset-size filters;
+    - institution detail, down to the source batch of each figure;
+    - early warning;
+    - quality and lineage.
 
 Design choices are recorded in [docs/adr](docs/adr). The full specification (in French) is [docs/specification.fr.md](docs/specification.fr.md).
 
@@ -68,6 +92,72 @@ These findings come from the runs of 2026-11-12. Each one is handled in the code
 - **A quarter not yet published is refused cleanly.** Q3 2026 still returned 0 rows on 2026-11-12: the batch is recorded as failed and nothing changes downstream.
 - **No revision observed yet.** Extracting the last four quarters again on 2026-11-12 gave four duplicates.
 - **Different date formats.** `REPDTE` is `20260630` in `/financials` and `06/30/2026` in `/institutions`. `FAILDATE` is `5/1/2026`.
+
+## Orchestration, on real data
+
+Run of 2026-11-13 (`airflow dags test fdic_warehouse`), 53 seconds from start to end:
+
+```text
+migrate                  success
+ingest_institutions      success   [duplicate] 27,835 rows, same file as the last batch: nothing loaded
+ingest_failures          success   [duplicate] 4,117 rows
+plan_quarters            success   ["2026Q3"]
+ingest_quarter[2026Q3]   skipped   the source announces 0 rows for this partition (not published yet?)
+publish                  success   [published] pub_20261113T130802855z
+report, check_freshness  success
+```
+
+With the revision window (`--conf '{"revision_window": true}'`), the run took 75 seconds:
+- five quarter tasks ran, from `2025Q3` to `2026Q3`;
+- the four published quarters came back as duplicates, so the FDIC revised nothing that week;
+- `2026Q3` was skipped.
+
+## Early warning, back-tested on real failures
+
+Each filing carries three signals (DWH-08). The thresholds are illustrative dbt variables, not a supervisory rating:
+- **capital**: Tier 1 leverage below 5%;
+- **asset quality**: noncurrent loans above 5% of loans;
+- **earnings**: a negative ROA.
+
+`rpt_failure_signals` takes every filing of a failed bank before its failure. Five of the six failures of 2025-2026 have at least one filing in the warehouse. The sixth, Pulaski Savings Bank, failed on 2025-01-17, before the first quarter loaded.
+
+| Bank (CERT) | Failure | Signals in its last filing | First filing with 2 signals or more |
+|---|---|---|---|
+| Metropolitan Capital B&T (57488) | 2026-01-30 | 2 (Q4 2025) | Q1 2025, 4 quarters before |
+| Community Bank and Trust – West Georgia (25796) | 2026-05-01 | 3 (Q1 2026) | Q2 2025, 4 quarters before |
+| Kentland FS&LA (28722) | 2026-07-10 | 3 (Q1 2026) | Q1 2025, 5 quarters before |
+| Small Business Bank (25744) | 2026-07-17 | 2 (Q1 2026) | Q1 2026, 1 quarter before |
+| Santa Anna National Bank (5520) | 2025-06-27 | 0 (Q1 2025) | none |
+
+Four of the five failures carried at least two signals in their last filing. Community Bank and Trust is the reference case of the specification. At 2026-03-31 it shows:
+- noncurrent loans at 17.3%;
+- equity at 1.3% of assets;
+- ROA at −6.9%.
+
+Santa Anna National Bank shows the limit of a ratio screen: its last filing looked healthy. In Q2 2026, the watch list (`rpt_watchlist`) holds 25 banks with at least two signals. Three of them carry all three, and seven have more signals than in the quarter before.
+
+## Reconciliation with the Quarterly Banking Profile (REC-02)
+
+Each quarter, the FDIC publishes industry totals in its Quarterly Banking Profile (QBP). The dbt seed `qbp_reference` holds two figures from the QBP press releases for six quarters, each with its URL:
+- the number of insured institutions;
+- the quarterly net income.
+
+`rpt_reconciliation_qbp` compares them with the published filings:
+
+| Quarter | Insured institutions, QBP / warehouse | Net income in $bn, QBP / warehouse |
+|---|---|---|
+| Q1 2025 | 4,462 / 4,462 | 70.6 / 70.41 (−0.27%) |
+| Q2 2025 | 4,421 / 4,421 | 69.9 / 70.03 (+0.19%) |
+| Q3 2025 | 4,379 / 4,379 | 79.3 / 79.32 |
+| Q4 2025 | 4,336 / 4,338 (+2) | 77.7 / 77.66 |
+| Q1 2026 | 4,278 / 4,279 (+1) | 80.5 / 80.45 |
+| Q2 2026 | 4,238 / 4,238 | 90.1 / 90.20 (+0.11%) |
+
+All 12 checks fall within the 0.5% tolerance, and 7 are equal within the published rounding. The counts match only once two classes are left out, because the QBP does not count them as insured institutions:
+- non-insured trust companies (class NC);
+- insured U.S. branches of foreign banks (class OI).
+
+The specification also asks for a bank-level reconciliation of ten bank-quarters with the FFIEC Call Reports. It is still open: the FFIEC sites answered HTTP 403 from the network used for this project.
 
 ## Quick start
 
@@ -88,11 +178,21 @@ python run.py ingest financials --quarters 2025Q1:2026Q2    # one batch per quar
 python run.py ingest institutions
 python run.py ingest failures
 python run.py report                                        # batch register
-python run.py publish                                       # dbt build (67 tests), then publish
+python run.py publish                                       # dbt build (64 data tests), then publish
 python run.py publications                                  # publication log
 python run.py ingest financials --last 4                    # extract the revision window again
-python -m pytest                                            # 54 tests
+python -m pytest                                            # 64 tests
+python run.py check                                         # lint, tests, offline end-to-end run (as in CI)
 ```
+
+**Airflow** (Airflow 3.3 in Docker, on http://127.0.0.1:8096):
+
+```bash
+docker compose --profile airflow up -d airflow
+docker compose exec airflow airflow dags unpause fdic_warehouse   # paused when created
+```
+
+**Power BI**: `python powerbi/build_powerbi.py` writes the project. Open `powerbi/FDIC.pbip` in Power BI Desktop and refresh it with the user `fdic_reader` and the password `FDIC_READER_PASSWORD` from `.env`.
 
 **Without internet**, on an empty database, load the versioned sample, then publish. The sample is built from 14 CERTs:
 - the five largest banks;
@@ -159,22 +259,24 @@ src/fdic_dwh/               client, sources, contract checks, pipeline, simulati
 dbt/models/staging/         typed views over the raw payloads
 dbt/models/intermediate/    filing versions, latest institutions
 dbt/snapshots/              SCD2 snapshot of the institutions
-dbt/models/marts/           facts, dimensions and reports that get published
+dbt/models/marts/           facts, dimensions, early warning and reconciliation reports that get published
+dbt/seeds/                  Quarterly Banking Profile reference figures
 dbt/tests/                  ratio consistency, quarterly flows, no simulated value published
+airflow/dags/               DAG fdic_warehouse
+docker/airflow/             Airflow image, with the project in its own virtual environment
+powerbi/                    Power BI project (TMDL model, PBIR report) and the script that generates it
 data/sample/                offline sample (versioned); data/raw/ is not versioned
 tests/                      unit, HTTP-mocked and PostgreSQL tests
-docs/                       specification, test scenario and architecture decision records
+.github/workflows/ci.yml    the run.py check job, started by hand
+docs/                       specification, test scenario, runbook and architecture decision records
 ```
 
-## Roadmap
+## What remains
 
-- **Week 3:**
-  - Airflow DAG with per-quarter reruns, and a nightly extraction of the last four quarters;
-  - Power BI dashboard on the `published` schema, with an early-warning page built on the failures;
-  - reconciliation of ten bank-quarters with the FFIEC Call Reports (REC-02);
-  - Q3 2026 load once the FDIC publishes it (REC-08);
-  - runbook, CI, and dbt docs published on GitHub Pages.
+- **Q3 2026 (REC-08).** The daily run will load the quarter when the FDIC publishes it. Nothing needs to change.
+- **Bank-level reconciliation (REC-02).** Ten bank-quarters still have to be checked against the FFIEC Call Reports, from a network the FFIEC site accepts.
+- **Dashboard captures.** Screenshots, a PDF export, and a three-minute video of a batch replay.
 
 ## Data source
 
-[FDIC BankFind Suite API](https://api.fdic.gov/banks/docs/). Public data from the U.S. Federal Deposit Insurance Corporation, no API key. The code is under the MIT license. The data is not covered by it.
+[FDIC BankFind Suite API](https://api.fdic.gov/banks/docs/). Public data from the U.S. Federal Deposit Insurance Corporation, no API key. The reconciliation figures come from the FDIC's Quarterly Banking Profile press releases, listed with their URLs in [dbt/seeds/qbp_reference.csv](dbt/seeds/qbp_reference.csv). The code is under the MIT license. The data is not covered by it.

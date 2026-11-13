@@ -1,0 +1,133 @@
+table rpt_watchlist
+	lineageTag: 78d25740-299d-542e-8372-afdd4fa17d67
+
+	column filing_id
+		dataType: string
+		lineageTag: 7d6f1a9d-d577-53cf-9972-14729942a1bc
+		summarizeBy: none
+		sourceColumn: filing_id
+		isHidden
+
+	column cert
+		dataType: int64
+		lineageTag: 4f03585e-4445-54d3-a09c-f9062b3be025
+		summarizeBy: none
+		sourceColumn: cert
+		formatString: 0
+
+	column institution_name
+		dataType: string
+		lineageTag: c0163689-dddc-5ca6-8fcf-dcc8dab2d7dd
+		summarizeBy: none
+		sourceColumn: institution_name
+
+	column state_code
+		dataType: string
+		lineageTag: 2b5b0e67-7ae1-5d88-9bee-2a3d6cd4df54
+		summarizeBy: none
+		sourceColumn: state_code
+
+	column bank_class
+		dataType: string
+		lineageTag: 4dfdea60-559c-5d6b-ac1a-c2d39a1a9edc
+		summarizeBy: none
+		sourceColumn: bank_class
+
+	column asset_size_group
+		dataType: string
+		lineageTag: b13c0231-e2e8-5b84-b049-00a2106f350b
+		summarizeBy: none
+		sourceColumn: asset_size_group
+
+	column report_date
+		dataType: dateTime
+		lineageTag: bcebd532-dcbc-51cd-9768-235e4c6c03a7
+		summarizeBy: none
+		sourceColumn: report_date
+		formatString: dd/MM/yyyy
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column total_assets_kusd
+		dataType: double
+		lineageTag: 8952d587-03b0-5e9d-8201-f21cd79ac8db
+		summarizeBy: none
+		sourceColumn: total_assets_kusd
+		formatString: #,0
+
+	column noncurrent_loans_ratio_pct
+		dataType: double
+		lineageTag: 25c4c2ae-2c98-5fed-9ce4-663f73a1a1c1
+		summarizeBy: none
+		sourceColumn: noncurrent_loans_ratio_pct
+		formatString: 0.00
+
+	column equity_to_assets_pct
+		dataType: double
+		lineageTag: 492154c9-c837-5708-a70f-aca46ffe385a
+		summarizeBy: none
+		sourceColumn: equity_to_assets_pct
+		formatString: 0.00
+
+	column tier1_leverage_ratio_pct
+		dataType: double
+		lineageTag: 91a384f2-dfbf-594e-894a-248ad423d07b
+		summarizeBy: none
+		sourceColumn: tier1_leverage_ratio_pct
+		formatString: 0.00
+
+	column roa_pct
+		dataType: double
+		lineageTag: 91a9a3af-660e-5dd1-bf6b-59e782075d22
+		summarizeBy: none
+		sourceColumn: roa_pct
+		formatString: 0.00
+
+	column signal_capital
+		dataType: boolean
+		lineageTag: ccdd1068-4956-5852-bedb-c74d92d37d42
+		summarizeBy: none
+		sourceColumn: signal_capital
+
+	column signal_asset_quality
+		dataType: boolean
+		lineageTag: e1df5855-989c-5eec-9b90-f202ef40e8fb
+		summarizeBy: none
+		sourceColumn: signal_asset_quality
+
+	column signal_earnings
+		dataType: boolean
+		lineageTag: 19c5e883-5d8e-587e-8f44-9be9fb781afc
+		summarizeBy: none
+		sourceColumn: signal_earnings
+
+	column signal_count
+		dataType: int64
+		lineageTag: c5c4498a-f20a-5086-9201-2607111ee3b8
+		summarizeBy: none
+		sourceColumn: signal_count
+		formatString: 0
+
+	column previous_signal_count
+		dataType: int64
+		lineageTag: 6db8cd77-4ed1-5c9c-bf9e-ec92c3e9a485
+		summarizeBy: none
+		sourceColumn: previous_signal_count
+		formatString: 0
+
+	column batch_id
+		dataType: string
+		lineageTag: 3104e071-76b5-545b-b23e-5a9eb14a37a3
+		summarizeBy: none
+		sourceColumn: batch_id
+
+	partition rpt_watchlist = m
+		mode: import
+		source =
+				let
+				    Base = PostgreSQL.Database(ServeurPostgreSQL, BasePostgreSQL),
+				    Donnees = Base{[Schema="published", Item="rpt_watchlist"]}[Data]
+				in
+				    Donnees
+
+	annotation PBI_ResultType = Table

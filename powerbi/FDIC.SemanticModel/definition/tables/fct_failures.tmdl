@@ -1,0 +1,168 @@
+table fct_failures
+	lineageTag: ce166719-e9a8-5039-a54c-275c9f9919fa
+
+	column failure_id
+		dataType: string
+		lineageTag: 1d2f5466-5692-5f57-a46f-861bc77c4bae
+		summarizeBy: none
+		sourceColumn: failure_id
+
+	column cert
+		dataType: int64
+		lineageTag: 7318574c-0f07-5613-816c-5458e7d426d4
+		summarizeBy: none
+		sourceColumn: cert
+		formatString: 0
+
+	column institution_name
+		dataType: string
+		lineageTag: dc94a168-2680-5238-b380-27d0cbd8cfdc
+		summarizeBy: none
+		sourceColumn: institution_name
+
+	column city
+		dataType: string
+		lineageTag: f3ea3415-d45d-5bfc-83f4-607e352a0ee8
+		summarizeBy: none
+		sourceColumn: city
+
+	column state_code
+		dataType: string
+		lineageTag: 5937348c-d3fd-5e07-81e1-060765141642
+		summarizeBy: none
+		sourceColumn: state_code
+
+	column failure_date
+		dataType: dateTime
+		lineageTag: e042edd8-5b51-5f60-9a65-8dea9acc8a6c
+		summarizeBy: none
+		sourceColumn: failure_date
+		formatString: dd/MM/yyyy
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column failure_year
+		dataType: int64
+		lineageTag: ca341950-39ac-5497-94b0-e464a3473dd6
+		summarizeBy: none
+		sourceColumn: failure_year
+		formatString: 0
+
+	column resolution_type
+		dataType: string
+		lineageTag: adfef50f-c030-5251-93f5-6456928db947
+		summarizeBy: none
+		sourceColumn: resolution_type
+
+	column resolution_transaction_type
+		dataType: string
+		lineageTag: 53bc3616-b249-5b9b-9bf7-e82e096ce385
+		summarizeBy: none
+		sourceColumn: resolution_transaction_type
+
+	column insurance_fund
+		dataType: string
+		lineageTag: ca20282f-30e1-54e1-bc3a-2551fae3685f
+		summarizeBy: none
+		sourceColumn: insurance_fund
+
+	column charter_class
+		dataType: string
+		lineageTag: eca29d31-3d3d-58dc-b50f-7bbdaa42b46e
+		summarizeBy: none
+		sourceColumn: charter_class
+
+	column acquirer_name
+		dataType: string
+		lineageTag: 52e571aa-cc66-5d7c-ab2a-2a53240d5205
+		summarizeBy: none
+		sourceColumn: acquirer_name
+
+	column total_assets_at_failure_kusd
+		dataType: double
+		lineageTag: ec694b6a-446c-559d-bd60-1b067af83dcb
+		summarizeBy: none
+		sourceColumn: total_assets_at_failure_kusd
+		formatString: #,0
+
+	column total_deposits_at_failure_kusd
+		dataType: double
+		lineageTag: 835e49ea-5140-5b68-87ba-bf4239d5b031
+		summarizeBy: none
+		sourceColumn: total_deposits_at_failure_kusd
+		formatString: #,0
+
+	column estimated_loss_kusd
+		dataType: double
+		lineageTag: b08ec414-c757-5319-a796-9bbe6be3fd51
+		summarizeBy: none
+		sourceColumn: estimated_loss_kusd
+		formatString: #,0
+
+	column last_report_date
+		dataType: dateTime
+		lineageTag: 382b17ff-38df-5627-8015-5977c0d3e7c4
+		summarizeBy: none
+		sourceColumn: last_report_date
+		formatString: dd/MM/yyyy
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column last_total_assets_kusd
+		dataType: double
+		lineageTag: 270fdb00-2715-56ad-a758-b2c02f0d7195
+		summarizeBy: none
+		sourceColumn: last_total_assets_kusd
+		formatString: #,0
+
+	column last_equity_to_assets_pct
+		dataType: double
+		lineageTag: df4cb2c7-b1b5-5d39-841f-e1dff464cb89
+		summarizeBy: none
+		sourceColumn: last_equity_to_assets_pct
+		formatString: 0.00
+
+	column last_tier1_leverage_ratio_pct
+		dataType: double
+		lineageTag: 06bec06d-228d-557e-9660-6441b22b12ce
+		summarizeBy: none
+		sourceColumn: last_tier1_leverage_ratio_pct
+		formatString: 0.00
+
+	column last_roa_pct
+		dataType: double
+		lineageTag: 8c1f8eac-d500-5497-915b-092e2a09a5ad
+		summarizeBy: none
+		sourceColumn: last_roa_pct
+		formatString: 0.00
+
+	column last_noncurrent_loans_ratio_pct
+		dataType: double
+		lineageTag: 4dfa773d-64f3-5c1f-9c20-3263e82fc2e2
+		summarizeBy: none
+		sourceColumn: last_noncurrent_loans_ratio_pct
+		formatString: 0.00
+
+	column last_signal_count
+		dataType: int64
+		lineageTag: 1e344618-a45a-5eb3-844c-5de816db1edc
+		summarizeBy: none
+		sourceColumn: last_signal_count
+		formatString: 0
+
+	column batch_id
+		dataType: string
+		lineageTag: 8681e04a-11e6-5fca-bcb6-595c5406bea4
+		summarizeBy: none
+		sourceColumn: batch_id
+
+	partition fct_failures = m
+		mode: import
+		source =
+				let
+				    Base = PostgreSQL.Database(ServeurPostgreSQL, BasePostgreSQL),
+				    Donnees = Base{[Schema="published", Item="fct_failures"]}[Data]
+				in
+				    Donnees
+
+	annotation PBI_ResultType = Table

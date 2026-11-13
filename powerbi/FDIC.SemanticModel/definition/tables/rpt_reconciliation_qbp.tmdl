@@ -1,0 +1,95 @@
+table rpt_reconciliation_qbp
+	lineageTag: 885db27e-95f0-5948-bf0a-58a1fa173bf9
+
+	column reconciliation_id
+		dataType: string
+		lineageTag: 47578f5e-11e4-5442-9888-bdfd14ed1894
+		summarizeBy: none
+		sourceColumn: reconciliation_id
+		isHidden
+
+	column report_date
+		dataType: dateTime
+		lineageTag: d66bcaad-d91f-5bed-9e20-7314f7a6e781
+		summarizeBy: none
+		sourceColumn: report_date
+		formatString: dd/MM/yyyy
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column report_quarter_label
+		dataType: string
+		lineageTag: 4a452044-e5bf-5806-a376-ac31f5e84869
+		summarizeBy: none
+		sourceColumn: report_quarter_label
+		sortByColumn: report_date
+
+	column measure
+		dataType: string
+		lineageTag: 082d9677-eb29-5285-8429-c61f863569fe
+		summarizeBy: none
+		sourceColumn: measure
+
+	column unit
+		dataType: string
+		lineageTag: d72bcc42-09bf-542e-992e-d044f58e1b3a
+		summarizeBy: none
+		sourceColumn: unit
+
+	column reference_value
+		dataType: double
+		lineageTag: 9478456c-3bec-52a8-bd78-242ed9d7efd0
+		summarizeBy: none
+		sourceColumn: reference_value
+		formatString: #,0.###
+
+	column warehouse_value
+		dataType: double
+		lineageTag: a3c72145-3980-508d-97fe-2ec20d3f88a7
+		summarizeBy: none
+		sourceColumn: warehouse_value
+		formatString: #,0.###
+
+	column gap
+		dataType: double
+		lineageTag: a27fc753-b972-5e5e-a829-237eaea98d28
+		summarizeBy: none
+		sourceColumn: gap
+		formatString: #,0.###
+
+	column relative_gap
+		dataType: double
+		lineageTag: e600d778-d8ea-5cd4-8bcf-59acd68978f1
+		summarizeBy: none
+		sourceColumn: relative_gap
+		formatString: 0.00%
+
+	column tolerance
+		dataType: double
+		lineageTag: 6f39cfea-61d9-57c1-9127-95bde8cb588b
+		summarizeBy: none
+		sourceColumn: tolerance
+		formatString: #,0.###
+
+	column status
+		dataType: string
+		lineageTag: 84fad2b0-c307-5d26-a6b0-2a8f0d35c470
+		summarizeBy: none
+		sourceColumn: status
+
+	column source_url
+		dataType: string
+		lineageTag: 67b59096-97c7-50dc-91df-c04360dd78f1
+		summarizeBy: none
+		sourceColumn: source_url
+
+	partition rpt_reconciliation_qbp = m
+		mode: import
+		source =
+				let
+				    Base = PostgreSQL.Database(ServeurPostgreSQL, BasePostgreSQL),
+				    Donnees = Base{[Schema="published", Item="rpt_reconciliation_qbp"]}[Data]
+				in
+				    Donnees
+
+	annotation PBI_ResultType = Table

@@ -1,0 +1,107 @@
+table rpt_filing_revisions
+	lineageTag: 24f212eb-ef29-52f2-98be-fabe34cff680
+
+	column revision_id
+		dataType: string
+		lineageTag: f5c52c55-8e56-51c1-9150-e27997c68f5d
+		summarizeBy: none
+		sourceColumn: revision_id
+		isHidden
+
+	column filing_id
+		dataType: string
+		lineageTag: c1c5c24d-29f8-5f9a-ab98-f8900de2e655
+		summarizeBy: none
+		sourceColumn: filing_id
+		isHidden
+
+	column cert
+		dataType: int64
+		lineageTag: 9d9bae18-1bfe-5451-9f55-600cd02e6809
+		summarizeBy: none
+		sourceColumn: cert
+		formatString: 0
+
+	column report_date
+		dataType: dateTime
+		lineageTag: c93c08a6-1cdc-533b-b66d-6de705010b13
+		summarizeBy: none
+		sourceColumn: report_date
+		formatString: dd/MM/yyyy
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column version_number
+		dataType: int64
+		lineageTag: 564224a4-bd13-5690-80dd-2654057a9b73
+		summarizeBy: none
+		sourceColumn: version_number
+		formatString: 0
+
+	column change_kind
+		dataType: string
+		lineageTag: 4b355bb0-2236-5240-ab4e-244b89422cc9
+		summarizeBy: none
+		sourceColumn: change_kind
+
+	column is_simulated
+		dataType: boolean
+		lineageTag: 4e7b5bc9-5832-5416-994b-d8af1904a94e
+		summarizeBy: none
+		sourceColumn: is_simulated
+
+	column previous_batch_id
+		dataType: string
+		lineageTag: bff50191-809b-5ccd-afce-d1a7a82990e4
+		summarizeBy: none
+		sourceColumn: previous_batch_id
+
+	column batch_id
+		dataType: string
+		lineageTag: 65cd9f92-ad87-56b7-986d-4fba3012bec8
+		summarizeBy: none
+		sourceColumn: batch_id
+
+	column changed_at
+		dataType: dateTime
+		lineageTag: b50599fb-9178-5189-9e6b-6b3d9e3bee59
+		summarizeBy: none
+		sourceColumn: changed_at
+		formatString: dd/MM/yyyy HH:mm
+
+	column source_field
+		dataType: string
+		lineageTag: eeb9a6e0-f26b-52f4-8acf-f6b8adc93398
+		summarizeBy: none
+		sourceColumn: source_field
+
+	column previous_value
+		dataType: string
+		lineageTag: 7c1602fa-2d22-52e1-8a8d-be5614d4eeae
+		summarizeBy: none
+		sourceColumn: previous_value
+
+	column new_value
+		dataType: string
+		lineageTag: e85a4189-d421-5f01-8c19-87125d137d08
+		summarizeBy: none
+		sourceColumn: new_value
+
+	column delta
+		dataType: double
+		lineageTag: 58ed7dca-772b-5171-981e-cca32808d3bc
+		summarizeBy: none
+		sourceColumn: delta
+		formatString: #,0.###
+
+	partition rpt_filing_revisions = m
+		mode: import
+		source =
+				let
+				    Base = PostgreSQL.Database(ServeurPostgreSQL, BasePostgreSQL),
+				    Donnees = Base{[Schema="published", Item="rpt_filing_revisions"]}[Data],
+				    Types = Table.TransformColumnTypes(Donnees, {{"changed_at", type datetime}})
+				in
+				    Types
+
+	annotation PBI_ResultType = Table

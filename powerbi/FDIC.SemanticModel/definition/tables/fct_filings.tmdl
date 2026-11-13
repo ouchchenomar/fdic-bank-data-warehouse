@@ -1,0 +1,331 @@
+table fct_filings
+	lineageTag: 645505b2-ef3b-5881-aedc-a9d224cf20a6
+
+	column filing_id
+		dataType: string
+		lineageTag: 2e9b64dc-08bc-5a95-b27f-e795278af349
+		summarizeBy: none
+		sourceColumn: filing_id
+		isHidden
+
+	column cert
+		dataType: int64
+		lineageTag: 610c03a1-26dd-5056-a324-7015561946ff
+		summarizeBy: none
+		sourceColumn: cert
+		formatString: 0
+
+	column report_date
+		dataType: dateTime
+		lineageTag: 7ec0fe87-0627-5483-aa11-8d05acacf074
+		summarizeBy: none
+		sourceColumn: report_date
+		formatString: dd/MM/yyyy
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column report_year
+		dataType: int64
+		lineageTag: 92776f58-486c-5838-825f-714a4a0b3f60
+		summarizeBy: none
+		sourceColumn: report_year
+		formatString: 0
+
+	column report_quarter
+		dataType: int64
+		lineageTag: 1298fdfc-9754-5b66-b3b9-06ce6260180a
+		summarizeBy: none
+		sourceColumn: report_quarter
+		formatString: 0
+
+	column report_quarter_label
+		dataType: string
+		lineageTag: 796c1172-3275-529e-90a5-05a1d5198157
+		summarizeBy: none
+		sourceColumn: report_quarter_label
+		sortByColumn: report_date
+
+	column institution_name
+		dataType: string
+		lineageTag: c49395cc-0378-57f2-9ae8-b2f663166ebb
+		summarizeBy: none
+		sourceColumn: institution_name
+
+	column state_code
+		dataType: string
+		lineageTag: dc5558ae-5e71-5aa0-b991-326e8f129866
+		summarizeBy: none
+		sourceColumn: state_code
+
+	column city
+		dataType: string
+		lineageTag: dd5f3324-797f-5528-8005-b3a4e0b6aa3f
+		summarizeBy: none
+		sourceColumn: city
+
+	column bank_class
+		dataType: string
+		lineageTag: 48d8879d-a97f-5f06-9616-da2bc5737dc0
+		summarizeBy: none
+		sourceColumn: bank_class
+
+	column total_assets_kusd
+		dataType: double
+		lineageTag: cdac787f-03e1-5210-ad84-086670f86501
+		summarizeBy: none
+		sourceColumn: total_assets_kusd
+		formatString: #,0
+
+	column total_deposits_kusd
+		dataType: double
+		lineageTag: 578d7c00-f51b-5452-89b4-be1bfea8895b
+		summarizeBy: none
+		sourceColumn: total_deposits_kusd
+		formatString: #,0
+
+	column net_loans_kusd
+		dataType: double
+		lineageTag: ad1918ac-2bb0-5863-a214-d51d796c090b
+		summarizeBy: none
+		sourceColumn: net_loans_kusd
+		formatString: #,0
+
+	column equity_capital_kusd
+		dataType: double
+		lineageTag: 5cb01d1f-222b-587f-9eb8-acdd327a6351
+		summarizeBy: none
+		sourceColumn: equity_capital_kusd
+		formatString: #,0
+
+	column noncurrent_loans_kusd
+		dataType: double
+		lineageTag: f31c797d-057c-5bb4-b9a9-480f5c72620f
+		summarizeBy: none
+		sourceColumn: noncurrent_loans_kusd
+		formatString: #,0
+
+	column tier1_capital_kusd
+		dataType: double
+		lineageTag: 14cc11c2-7f68-54a6-8987-73357679c008
+		summarizeBy: none
+		sourceColumn: tier1_capital_kusd
+		formatString: #,0
+
+	column net_income_ytd_kusd
+		dataType: double
+		lineageTag: 620efc33-1bf1-5100-94d7-7fbe9d99d34d
+		summarizeBy: none
+		sourceColumn: net_income_ytd_kusd
+		formatString: #,0
+
+	column interest_income_ytd_kusd
+		dataType: double
+		lineageTag: f7df2f62-c7f3-5342-afa2-67e40739d0e0
+		summarizeBy: none
+		sourceColumn: interest_income_ytd_kusd
+		formatString: #,0
+
+	column net_income_qtr_kusd
+		dataType: double
+		lineageTag: a6837175-961b-5e85-8c23-6603a773df03
+		summarizeBy: none
+		sourceColumn: net_income_qtr_kusd
+		formatString: #,0
+
+	column interest_income_qtr_kusd
+		dataType: double
+		lineageTag: 0840607f-af2b-54ed-a4c3-45c0600680f5
+		summarizeBy: none
+		sourceColumn: interest_income_qtr_kusd
+		formatString: #,0
+
+	column flow_basis
+		dataType: string
+		lineageTag: 692a5048-bff8-5c96-b1c9-fd201f0c5f39
+		summarizeBy: none
+		sourceColumn: flow_basis
+
+	column roa_pct
+		dataType: double
+		lineageTag: 22385b3d-ba8e-5a84-9c88-1c4c12445788
+		summarizeBy: none
+		sourceColumn: roa_pct
+		formatString: 0.00
+
+	column roe_pct
+		dataType: double
+		lineageTag: 570f5b9b-7425-5f05-a36a-a4c44d7847bf
+		summarizeBy: none
+		sourceColumn: roe_pct
+		formatString: 0.00
+
+	column net_interest_margin_pct
+		dataType: double
+		lineageTag: f97202db-2761-5352-87c7-997696eed35d
+		summarizeBy: none
+		sourceColumn: net_interest_margin_pct
+		formatString: 0.00
+
+	column efficiency_ratio_pct
+		dataType: double
+		lineageTag: 95edf85b-86fc-5f0d-999f-061748e40aea
+		summarizeBy: none
+		sourceColumn: efficiency_ratio_pct
+		formatString: 0.00
+
+	column equity_to_assets_pct
+		dataType: double
+		lineageTag: 289256bd-71e9-52b5-b921-2644efab4660
+		summarizeBy: none
+		sourceColumn: equity_to_assets_pct
+		formatString: 0.00
+
+	column loans_to_deposits_pct
+		dataType: double
+		lineageTag: a10488b2-1f68-5847-bee0-9778b0fb3395
+		summarizeBy: none
+		sourceColumn: loans_to_deposits_pct
+		formatString: 0.00
+
+	column noncurrent_loans_ratio_pct
+		dataType: double
+		lineageTag: e49f5969-e61c-56da-a1db-ea1a2b845970
+		summarizeBy: none
+		sourceColumn: noncurrent_loans_ratio_pct
+		formatString: 0.00
+
+	column net_chargeoffs_ratio_pct
+		dataType: double
+		lineageTag: 0eae1d19-7cb3-5b0f-a60f-3c3b69ae65a9
+		summarizeBy: none
+		sourceColumn: net_chargeoffs_ratio_pct
+		formatString: 0.00
+
+	column tier1_leverage_ratio_pct
+		dataType: double
+		lineageTag: cc24d84b-4256-5a95-a788-444f804c2975
+		summarizeBy: none
+		sourceColumn: tier1_leverage_ratio_pct
+		formatString: 0.00
+
+	column asset_size_group
+		dataType: string
+		lineageTag: aedaab85-f2d4-591f-8f05-3d555737e836
+		summarizeBy: none
+		sourceColumn: asset_size_group
+		sortByColumn: asset_size_order
+
+	column asset_size_order
+		dataType: int64
+		lineageTag: 816e4e45-4e84-5ef3-a397-2d802ec40bf2
+		summarizeBy: none
+		sourceColumn: asset_size_order
+		isHidden
+		formatString: 0
+
+	column signal_capital
+		dataType: boolean
+		lineageTag: 0430423f-4818-5a5d-8479-fddc0868fd18
+		summarizeBy: none
+		sourceColumn: signal_capital
+
+	column signal_asset_quality
+		dataType: boolean
+		lineageTag: cb3306d3-1dc9-5176-b7c0-621a2a0be996
+		summarizeBy: none
+		sourceColumn: signal_asset_quality
+
+	column signal_earnings
+		dataType: boolean
+		lineageTag: 1405a091-013a-5cdd-8445-d9d19cd379cd
+		summarizeBy: none
+		sourceColumn: signal_earnings
+
+	column signal_count
+		dataType: int64
+		lineageTag: ec9d6ad3-3e0e-56af-841e-fb2313075db8
+		summarizeBy: none
+		sourceColumn: signal_count
+		formatString: 0
+
+	column is_latest_quarter
+		dataType: boolean
+		lineageTag: e038a03e-60df-58e7-873d-87be29dc6277
+		summarizeBy: none
+		sourceColumn: is_latest_quarter
+
+	column batch_id
+		dataType: string
+		lineageTag: e6d19ffe-0fa5-55c1-89f7-426f63f5fd51
+		summarizeBy: none
+		sourceColumn: batch_id
+
+	column batch_mode
+		dataType: string
+		lineageTag: 930d2c83-b75d-5aaf-aeef-1979a2153027
+		summarizeBy: none
+		sourceColumn: batch_mode
+
+	column is_simulated
+		dataType: boolean
+		lineageTag: 1e581b5d-7b83-58c5-906e-b43b34e84e18
+		summarizeBy: none
+		sourceColumn: is_simulated
+
+	column contract_version
+		dataType: int64
+		lineageTag: 84c450d8-bf36-5656-8c34-30fba2c9514a
+		summarizeBy: none
+		sourceColumn: contract_version
+		formatString: 0
+
+	column source_index_name
+		dataType: string
+		lineageTag: 49e6fdce-73bb-5533-b0ac-886343e257c8
+		summarizeBy: none
+		sourceColumn: source_index_name
+
+	column extracted_at
+		dataType: dateTime
+		lineageTag: 65aa3ced-6ea9-5e59-9889-eacade2fca13
+		summarizeBy: none
+		sourceColumn: extracted_at
+		formatString: dd/MM/yyyy HH:mm
+
+	column version_count
+		dataType: int64
+		lineageTag: e1b02833-1f16-5cad-bd9f-3e4e8bb3c4c1
+		summarizeBy: none
+		sourceColumn: version_count
+		formatString: 0
+
+	column last_change_kind
+		dataType: string
+		lineageTag: 1ea91cca-10b4-57b3-8951-7bda76656cfc
+		summarizeBy: none
+		sourceColumn: last_change_kind
+
+	column last_changed_batch_id
+		dataType: string
+		lineageTag: fa847ddd-9c1e-5341-b6e8-567000f98e65
+		summarizeBy: none
+		sourceColumn: last_changed_batch_id
+
+	column last_changed_at
+		dataType: dateTime
+		lineageTag: f3884577-7b78-5f83-a7c4-1c6d12aa72cf
+		summarizeBy: none
+		sourceColumn: last_changed_at
+		formatString: dd/MM/yyyy HH:mm
+
+	partition fct_filings = m
+		mode: import
+		source =
+				let
+				    Base = PostgreSQL.Database(ServeurPostgreSQL, BasePostgreSQL),
+				    Donnees = Base{[Schema="published", Item="fct_filings"]}[Data],
+				    Types = Table.TransformColumnTypes(Donnees, {{"extracted_at", type datetime}, {"last_changed_at", type datetime}})
+				in
+				    Types
+
+	annotation PBI_ResultType = Table

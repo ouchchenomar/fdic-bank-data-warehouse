@@ -1,0 +1,122 @@
+table fct_filing_versions
+	lineageTag: fe32d33e-6f02-587a-869d-3620b56597b4
+
+	column filing_version_id
+		dataType: string
+		lineageTag: cfd10df5-e9ca-5188-a96d-04022a351fb5
+		summarizeBy: none
+		sourceColumn: filing_version_id
+		isHidden
+
+	column filing_id
+		dataType: string
+		lineageTag: e31ba212-7dd0-5e57-bebb-57338b46dcc1
+		summarizeBy: none
+		sourceColumn: filing_id
+		isHidden
+
+	column cert
+		dataType: int64
+		lineageTag: fe77d4e6-e157-50ae-bef7-2b4d60e6da06
+		summarizeBy: none
+		sourceColumn: cert
+		formatString: 0
+
+	column report_date
+		dataType: dateTime
+		lineageTag: 633dc11b-38e5-5d52-9dd8-4975c69b05ab
+		summarizeBy: none
+		sourceColumn: report_date
+		formatString: dd/MM/yyyy
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column version_number
+		dataType: int64
+		lineageTag: 164d5c1b-b1f8-570a-889b-017b74607ae1
+		summarizeBy: none
+		sourceColumn: version_number
+		formatString: 0
+
+	column batch_id
+		dataType: string
+		lineageTag: 4888181d-2bc6-5bdc-9078-2722d10e04d3
+		summarizeBy: none
+		sourceColumn: batch_id
+
+	column batch_mode
+		dataType: string
+		lineageTag: 306adca1-8144-5fe3-8c56-10e091a359ae
+		summarizeBy: none
+		sourceColumn: batch_mode
+
+	column is_simulated
+		dataType: boolean
+		lineageTag: 6be3f4f0-bb62-5a49-a6eb-dea8645834e5
+		summarizeBy: none
+		sourceColumn: is_simulated
+
+	column contract_version
+		dataType: int64
+		lineageTag: 0b16a5b4-9745-56bb-9846-5fa9722a5f63
+		summarizeBy: none
+		sourceColumn: contract_version
+		formatString: 0
+
+	column change_kind
+		dataType: string
+		lineageTag: a4190f71-5f0b-5771-bbfd-8789dcc0619f
+		summarizeBy: none
+		sourceColumn: change_kind
+
+	column changed_fields
+		dataType: int64
+		lineageTag: a2aba9cc-4f8d-5e13-a3ff-02a43ab7a411
+		summarizeBy: none
+		sourceColumn: changed_fields
+		formatString: 0
+
+	column previous_batch_id
+		dataType: string
+		lineageTag: 78845dd1-2de8-5335-80bf-317a76ac438a
+		summarizeBy: none
+		sourceColumn: previous_batch_id
+
+	column valid_from
+		dataType: dateTime
+		lineageTag: 41934ccc-1732-5d30-8284-e274805a206b
+		summarizeBy: none
+		sourceColumn: valid_from
+		formatString: dd/MM/yyyy HH:mm
+
+	column valid_to
+		dataType: dateTime
+		lineageTag: 3976057a-eb1c-5ea7-b4e8-f1bf7c8d7fcd
+		summarizeBy: none
+		sourceColumn: valid_to
+		formatString: dd/MM/yyyy HH:mm
+
+	column is_latest
+		dataType: boolean
+		lineageTag: 57e8d58b-5bba-5e28-a294-eac714dd86e3
+		summarizeBy: none
+		sourceColumn: is_latest
+
+	column row_hash
+		dataType: string
+		lineageTag: 61798249-fc73-55c1-9f42-ded176b5f613
+		summarizeBy: none
+		sourceColumn: row_hash
+		isHidden
+
+	partition fct_filing_versions = m
+		mode: import
+		source =
+				let
+				    Base = PostgreSQL.Database(ServeurPostgreSQL, BasePostgreSQL),
+				    Donnees = Base{[Schema="published", Item="fct_filing_versions"]}[Data],
+				    Types = Table.TransformColumnTypes(Donnees, {{"valid_from", type datetime}, {"valid_to", type datetime}})
+				in
+				    Types
+
+	annotation PBI_ResultType = Table

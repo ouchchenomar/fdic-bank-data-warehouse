@@ -20,6 +20,11 @@ def quarter_to_repdte(label: str) -> str:
     return f"{year}{_QUARTER_END[quarter]}"
 
 
+def repdte_to_quarter(repdte: str) -> str:
+    """'20260630' -> '2026Q2'."""
+    return f"{repdte[:4]}Q{int(repdte[4:6]) // 3}"
+
+
 def quarter_range(spec: str) -> list[str]:
     """'2025Q1:2026Q2' -> ['20250331', ..., '20260630']; a single quarter is accepted too."""
     start, _, end = spec.partition(":")

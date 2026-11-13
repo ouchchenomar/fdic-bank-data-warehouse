@@ -7,6 +7,7 @@ model-paths: ["models"]
 macro-paths: ["macros"]
 test-paths: ["tests"]
 snapshot-paths: ["snapshots"]
+seed-paths: ["seeds"]
 target-path: target
 clean-targets: [target]
 
@@ -21,3 +22,13 @@ models:
     marts:
       +schema: marts
       +materialized: table
+
+# DWH-08 early-warning screen: illustrative thresholds, not a supervisory rating.
+vars:
+  ew_tier1_leverage_min_pct: 5      # below the 5% "well capitalized" leverage threshold
+  ew_noncurrent_loans_max_pct: 5    # noncurrent loans above 5% of loans
+  ew_roa_min_pct: 0                 # loss-making over the year to date
+
+seeds:
+  fdic_dwh:
+    +schema: reference

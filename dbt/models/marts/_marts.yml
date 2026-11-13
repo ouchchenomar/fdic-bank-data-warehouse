@@ -106,6 +106,38 @@ models:
       - name: revision_id
         data_tests: [unique, not_null]
 
+  - name: rpt_failure_signals
+    description: >
+      DWH-08 back-test: each failed bank's filings before its failure, with the three
+      early-warning signals (capital, asset quality, earnings) they carried.
+    columns:
+      - name: failure_signal_id
+        data_tests: [unique, not_null]
+      - name: quarters_before_failure
+        description: 1 for the last filing before the failure, 2 for the one before, and so on.
+
+  - name: rpt_watchlist
+    description: >
+      DWH-08 watch list: banks of the latest quarter with at least two early-warning signals.
+      An illustrative screen, not a supervisory rating.
+    columns:
+      - name: filing_id
+        data_tests: [unique, not_null]
+
+  - name: rpt_reconciliation_qbp
+    description: >
+      REC-02 at industry level: insured institutions and quarterly net income of the published
+      filings against the FDIC's Quarterly Banking Profile, with gap, relative gap and status
+      (match, within_tolerance, gap, no_reference, not_loaded).
+    columns:
+      - name: reconciliation_id
+        data_tests: [unique, not_null]
+      - name: status
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [match, within_tolerance, gap, no_reference, not_loaded]
+
   - name: rpt_batches
     description: Batch register for the operations page, with is_current for the batches in use.
     columns:

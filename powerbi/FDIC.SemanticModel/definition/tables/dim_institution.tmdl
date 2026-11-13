@@ -1,0 +1,148 @@
+table dim_institution
+	lineageTag: 6ffde980-c67f-57ff-8d6e-4f425aea6c15
+
+	column cert
+		dataType: int64
+		lineageTag: c61c1052-7398-5b4a-8278-7d52200cf5ce
+		summarizeBy: none
+		sourceColumn: cert
+		formatString: 0
+
+	column institution_name
+		dataType: string
+		lineageTag: 34242169-75dd-584a-acc2-c01873acccb7
+		summarizeBy: none
+		sourceColumn: institution_name
+
+	column state_code
+		dataType: string
+		lineageTag: 65279b6e-d793-541a-9a17-a2cb386dd20e
+		summarizeBy: none
+		sourceColumn: state_code
+
+	column state_name
+		dataType: string
+		lineageTag: 23c11977-a2b0-5be6-818c-90148ccc0e41
+		summarizeBy: none
+		sourceColumn: state_name
+
+	column city
+		dataType: string
+		lineageTag: 1c405d8d-7ba2-563a-b4fc-993561ac99b2
+		summarizeBy: none
+		sourceColumn: city
+
+	column bank_class
+		dataType: string
+		lineageTag: c93bd942-4cad-5922-a988-619f7980a627
+		summarizeBy: none
+		sourceColumn: bank_class
+
+	column primary_regulator
+		dataType: string
+		lineageTag: 2c9cc143-20bd-5060-a30d-e383ec26e3f1
+		summarizeBy: none
+		sourceColumn: primary_regulator
+
+	column charter_code
+		dataType: string
+		lineageTag: 4e76c40e-6d48-5956-b928-b0115bd26ac5
+		summarizeBy: none
+		sourceColumn: charter_code
+
+	column fed_rssd
+		dataType: string
+		lineageTag: 504df672-2bec-50bb-b58e-b65e64cf3c3c
+		summarizeBy: none
+		sourceColumn: fed_rssd
+
+	column is_active
+		dataType: boolean
+		lineageTag: a22f856d-a7dc-5d85-9954-d72f1b5532d0
+		summarizeBy: none
+		sourceColumn: is_active
+
+	column established_date
+		dataType: dateTime
+		lineageTag: 9bd0c5f3-d569-5f0f-b292-0a9d1b0eed08
+		summarizeBy: none
+		sourceColumn: established_date
+		formatString: dd/MM/yyyy
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column end_date
+		dataType: dateTime
+		lineageTag: a3b5e099-55ee-5b76-a56a-5fba0eb70112
+		summarizeBy: none
+		sourceColumn: end_date
+		formatString: dd/MM/yyyy
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column insured_date
+		dataType: dateTime
+		lineageTag: 6968eff4-1529-5b1b-bf03-ccad958bcd19
+		summarizeBy: none
+		sourceColumn: insured_date
+		formatString: dd/MM/yyyy
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column attribute_source
+		dataType: string
+		lineageTag: 1171cb62-0ff8-52e7-b1fa-cba1d2592608
+		summarizeBy: none
+		sourceColumn: attribute_source
+
+	column first_report_date
+		dataType: dateTime
+		lineageTag: a3a40419-51ca-57b3-a3d6-8ddf198da004
+		summarizeBy: none
+		sourceColumn: first_report_date
+		formatString: dd/MM/yyyy
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column last_report_date
+		dataType: dateTime
+		lineageTag: e0a96fda-269c-530b-9466-0f7a025fb66e
+		summarizeBy: none
+		sourceColumn: last_report_date
+		formatString: dd/MM/yyyy
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column filings_in_warehouse
+		dataType: int64
+		lineageTag: 0b3971cc-c18b-5deb-a22b-3b9a1110263d
+		summarizeBy: none
+		sourceColumn: filings_in_warehouse
+		formatString: 0
+
+	column last_failure_date
+		dataType: dateTime
+		lineageTag: 6aa632a7-c530-5d2e-a5d5-4adfb0dd9af4
+		summarizeBy: none
+		sourceColumn: last_failure_date
+		formatString: dd/MM/yyyy
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column failure_count
+		dataType: int64
+		lineageTag: e0c1f2c6-4f8b-5afa-bb04-833cd4d18b83
+		summarizeBy: none
+		sourceColumn: failure_count
+		formatString: 0
+
+	partition dim_institution = m
+		mode: import
+		source =
+				let
+				    Base = PostgreSQL.Database(ServeurPostgreSQL, BasePostgreSQL),
+				    Donnees = Base{[Schema="published", Item="dim_institution"]}[Data]
+				in
+				    Donnees
+
+	annotation PBI_ResultType = Table

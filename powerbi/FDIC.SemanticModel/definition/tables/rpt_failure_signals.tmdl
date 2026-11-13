@@ -1,0 +1,150 @@
+table rpt_failure_signals
+	lineageTag: d03bab55-e502-51e0-8a0b-e15ac325d624
+
+	column failure_signal_id
+		dataType: string
+		lineageTag: 894d8d4e-79c0-54c4-a38a-9b5518b9d595
+		summarizeBy: none
+		sourceColumn: failure_signal_id
+		isHidden
+
+	column failure_id
+		dataType: string
+		lineageTag: a77cb3eb-380a-511c-9e4c-eab67e2551dc
+		summarizeBy: none
+		sourceColumn: failure_id
+
+	column cert
+		dataType: int64
+		lineageTag: 3d50d619-6eca-5335-a4f6-c3d95cc76236
+		summarizeBy: none
+		sourceColumn: cert
+		formatString: 0
+
+	column institution_name
+		dataType: string
+		lineageTag: 35b3a263-a4c5-5253-9842-5a5d3f34d351
+		summarizeBy: none
+		sourceColumn: institution_name
+
+	column state_code
+		dataType: string
+		lineageTag: 1d7bf558-e503-52df-ae14-a67692b5a619
+		summarizeBy: none
+		sourceColumn: state_code
+
+	column failure_date
+		dataType: dateTime
+		lineageTag: 2ed40e74-bf5b-5abe-b8d5-23ad8dab6dd3
+		summarizeBy: none
+		sourceColumn: failure_date
+		formatString: dd/MM/yyyy
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column estimated_loss_kusd
+		dataType: double
+		lineageTag: da25cf80-bfc2-590b-b11a-4c594a51c1c9
+		summarizeBy: none
+		sourceColumn: estimated_loss_kusd
+		formatString: #,0
+
+	column report_date
+		dataType: dateTime
+		lineageTag: 623c876f-8db7-5579-b0bf-065637eef7c9
+		summarizeBy: none
+		sourceColumn: report_date
+		formatString: dd/MM/yyyy
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column report_quarter_label
+		dataType: string
+		lineageTag: 6b0525fc-3cb1-58da-83bd-63095ad41a88
+		summarizeBy: none
+		sourceColumn: report_quarter_label
+		sortByColumn: report_date
+
+	column quarters_before_failure
+		dataType: int64
+		lineageTag: 587f3040-43b7-5c47-8a08-1fa5c22a490d
+		summarizeBy: none
+		sourceColumn: quarters_before_failure
+		formatString: 0
+
+	column total_assets_kusd
+		dataType: double
+		lineageTag: 94fa21a8-d576-56ba-97f7-56f029981fcf
+		summarizeBy: none
+		sourceColumn: total_assets_kusd
+		formatString: #,0
+
+	column noncurrent_loans_ratio_pct
+		dataType: double
+		lineageTag: fa46ea15-7993-5ab8-8ba9-fccdbbad4ab9
+		summarizeBy: none
+		sourceColumn: noncurrent_loans_ratio_pct
+		formatString: 0.00
+
+	column equity_to_assets_pct
+		dataType: double
+		lineageTag: fb79f5ac-91b9-5294-94d9-20a386ad0cb2
+		summarizeBy: none
+		sourceColumn: equity_to_assets_pct
+		formatString: 0.00
+
+	column tier1_leverage_ratio_pct
+		dataType: double
+		lineageTag: c9feea82-a220-5834-acf2-f45417e030e3
+		summarizeBy: none
+		sourceColumn: tier1_leverage_ratio_pct
+		formatString: 0.00
+
+	column roa_pct
+		dataType: double
+		lineageTag: b694feb3-a7a0-5ba1-b5d0-20d5b0957123
+		summarizeBy: none
+		sourceColumn: roa_pct
+		formatString: 0.00
+
+	column signal_capital
+		dataType: boolean
+		lineageTag: f7a929ec-0595-5b9e-ae7f-abcd03095599
+		summarizeBy: none
+		sourceColumn: signal_capital
+
+	column signal_asset_quality
+		dataType: boolean
+		lineageTag: fda701b1-4428-5a65-aea7-711014291243
+		summarizeBy: none
+		sourceColumn: signal_asset_quality
+
+	column signal_earnings
+		dataType: boolean
+		lineageTag: 863b833e-2c4a-5326-8a85-1284cdc39abd
+		summarizeBy: none
+		sourceColumn: signal_earnings
+
+	column signal_count
+		dataType: int64
+		lineageTag: ab616172-b665-500f-8bba-27ad6578b408
+		summarizeBy: none
+		sourceColumn: signal_count
+		formatString: 0
+
+	column batch_id
+		dataType: string
+		lineageTag: 2d7eed52-9a14-5067-b2b2-2dfcea916235
+		summarizeBy: none
+		sourceColumn: batch_id
+
+	partition rpt_failure_signals = m
+		mode: import
+		source =
+				let
+				    Base = PostgreSQL.Database(ServeurPostgreSQL, BasePostgreSQL),
+				    Donnees = Base{[Schema="published", Item="rpt_failure_signals"]}[Data]
+				in
+				    Donnees
+
+	annotation PBI_ResultType = Table

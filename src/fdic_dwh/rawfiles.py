@@ -37,6 +37,6 @@ def write_raw(
     sha256 = hashlib.sha256(content).hexdigest()
     manifest = {**manifest, "file": data_path.name, "sha256": sha256}
     (target_dir / f"{batch_id}.manifest.json").write_text(
-        json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8"
+        json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8", newline="\n"
     )
     return data_path, sha256

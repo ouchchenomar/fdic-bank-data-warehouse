@@ -1,0 +1,19 @@
+relationship 7b8f0452-7c46-5371-a8cc-93af9a29501b
+	fromColumn: fct_filings.cert
+	toColumn: dim_institution.cert
+	crossFilteringBehavior: oneDirection
+
+relationship afcb3a22-c830-5520-8db3-a0663abc68c7
+	fromColumn: fct_failures.cert
+	toColumn: dim_institution.cert
+	crossFilteringBehavior: oneDirection
+
+relationship a1dc5373-9ced-562f-918e-832a7c111a60
+	fromColumn: fct_filing_versions.filing_id
+	toColumn: fct_filings.filing_id
+	crossFilteringBehavior: oneDirection
+
+relationship abbf24ef-1795-57a3-b8d0-5364d9355618
+	fromColumn: rpt_filing_revisions.filing_id
+	toColumn: fct_filings.filing_id
+	crossFilteringBehavior: oneDirection

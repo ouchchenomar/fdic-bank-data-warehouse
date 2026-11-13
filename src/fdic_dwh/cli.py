@@ -3,15 +3,20 @@
 from __future__ import annotations
 
 import argparse
+import json
 from collections import Counter
+from datetime import date
+
+from psycopg import sql
 
 from .client import FdicClient
 from .config import ROOT, load_settings
 from .contract import load_contract
 from .db import apply_migrations, connect
+from .orchestration import plan_quarters
 from .pipeline import Outcome, ingest
 from .publish import PUBLISHED_TABLES, BuildResult, publication_report, publish, rollback
-from .quarters import quarter_range, quarter_to_repdte
+from .quarters import quarter_range, quarter_to_repdte, repdte_to_quarter
 from .report import batch_report
 from .sample import DEFAULT_CERTS, make_sample
 from .simulate import SimulatedSource, parse_value
@@ -37,6 +42,11 @@ def cmd_db_init(_args) -> int:
     with connect(settings.conninfo) as conn:
         for name in apply_migrations(conn, ROOT / "sql"):
             print(f"applied {name}")
+        if settings.reader_password:
+            conn.execute(sql.SQL("alter role fdic_reader login password {}").format(
+                sql.Literal(settings.reader_password)))
+            conn.commit()
+            print("fdic_reader can log in (password: FDIC_READER_PASSWORD in .env)")
     return 0
 
 
@@ -75,7 +85,42 @@ def cmd_ingest(args) -> int:
                 outcome = ingest(conn, spec, source, settings.raw_dir, partition)
                 _print_outcome(outcome)
                 outcomes.append(outcome)
-    return 1 if any(o.status == "failed" for o in outcomes) else 0
+    return _exit_code(outcomes)
+
+
+EXIT_NOT_PUBLISHED = 99  # Airflow's BashOperator marks a task "skipped" on this exit code
+
+
+def _not_published(outcome: Outcome) -> bool:
+    return outcome.status == "failed" and outcome.rows_announced == 0
+
+
+def _exit_code(outcomes: list[Outcome]) -> int:
+    """1 if a batch failed, 99 if the only failures are quarters not published yet, else 0."""
+    failed = [o for o in outcomes if o.status == "failed"]
+    if any(not _not_published(o) for o in failed):
+        return 1
+    return EXIT_NOT_PUBLISHED if failed else 0
+
+
+def cmd_plan(args) -> int:
+    settings = load_settings()
+    with connect(settings.conninfo) as conn:
+        loaded = [
+            r[0]
+            for r in conn.execute(
+                "select distinct partition_value from ops.batch"
+                " where dataset = 'financials' and status = 'loaded'"
+            )
+        ]
+    today = date.fromisoformat(args.today) if args.today else date.today()
+    try:
+        planned = plan_quarters(loaded, today, include_window=args.window,
+                                requested=args.quarters)
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
+    print(json.dumps([repdte_to_quarter(q) for q in planned]))
+    return 0
 
 
 def _last_loaded_partitions(conn, dataset: str, count: int) -> list[str]:
@@ -170,6 +215,12 @@ def cmd_make_sample(args) -> int:
     return 0
 
 
+def cmd_check(args) -> int:
+    from .check import run_checks
+
+    return run_checks(end_to_end=not args.no_end_to_end, keep=args.keep)
+
+
 def cmd_dbt(args) -> int:
     load_settings()  # exports .env values that profiles.yml reads with env_var()
     from dbt.cli.main import dbtRunner
@@ -195,6 +246,13 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--offline", action="store_true", help="read the versioned sample instead")
     p.add_argument("--page-size", type=int, help="override FDIC_PAGE_SIZE")
     p.set_defaults(func=cmd_ingest)
+
+    p = sub.add_parser("plan", help="print, as JSON, the quarters a scheduled run should extract")
+    p.add_argument("--window", action="store_true",
+                   help="add the revision window (the four most recent quarters loaded)")
+    p.add_argument("--quarters", help="rerun these quarters instead, e.g. 2026Q2")
+    p.add_argument("--today", help="reference date, YYYY-MM-DD (default: today)")
+    p.set_defaults(func=cmd_plan)
 
     p = sub.add_parser("report", help="show the batch register")
     p.add_argument("--limit", type=int, default=30)
@@ -223,6 +281,12 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("publications", help="show the publication log")
     p.add_argument("--limit", type=int, default=10)
     p.set_defaults(func=cmd_publications)
+
+    p = sub.add_parser("check", help="lint, tests, then an offline end-to-end run (as in CI)")
+    p.add_argument("--no-end-to-end", action="store_true",
+                   help="lint and tests only, no scratch database")
+    p.add_argument("--keep", action="store_true", help="keep the scratch database <db>_ci")
+    p.set_defaults(func=cmd_check)
 
     p = sub.add_parser("dbt", help="run dbt with the project's settings, e.g. run.py dbt build")
     p.add_argument("dbt_args", nargs=argparse.REMAINDER)

@@ -1,0 +1,10 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/pagesMetadata/1.0.0/schema.json",
+  "pageOrder": [
+    "vue_ensemble",
+    "etablissement",
+    "alerte",
+    "qualite"
+  ],
+  "activePageName": "vue_ensemble"
+}

@@ -20,3 +20,7 @@ logs/
 
 # dbt anonymous user id
 dbt/.user.yml
+
+# Power BI Desktop local files (cache with data, user settings)
+**/.pbi/localSettings.json
+**/.pbi/cache.abf

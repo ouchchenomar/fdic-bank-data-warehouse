@@ -1,0 +1,41 @@
+{
+  "name": "FDIC",
+  "dataColors": [
+    "#087F8C",
+    "#2471A3",
+    "#E6A23C",
+    "#7C6CC4",
+    "#51A793",
+    "#B23A3A",
+    "#5E8DB5",
+    "#132C45"
+  ],
+  "background": "#FFFFFF",
+  "foreground": "#132C45",
+  "tableAccent": "#087F8C",
+  "good": "#269977",
+  "neutral": "#E6A23C",
+  "bad": "#B23A3A",
+  "textClasses": {
+    "label": {
+      "fontFace": "Segoe UI",
+      "fontSize": 11,
+      "color": "#607286"
+    },
+    "callout": {
+      "fontFace": "Segoe UI Semibold",
+      "fontSize": 28,
+      "color": "#132C45"
+    },
+    "title": {
+      "fontFace": "Segoe UI Semibold",
+      "fontSize": 13,
+      "color": "#132C45"
+    },
+    "header": {
+      "fontFace": "Segoe UI",
+      "fontSize": 12,
+      "color": "#132C45"
+    }
+  }
+}

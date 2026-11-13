@@ -1,0 +1,5 @@
+expression ServeurPostgreSQL = "127.0.0.1:5435" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: e7dd6371-0f14-5184-b3b6-1c8287e31ae9
+
+expression BasePostgreSQL = "fdic_dwh" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 7dade7b3-c545-5546-a6fe-e9838de04a2e

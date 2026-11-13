@@ -62,7 +62,7 @@ def make_sample(
             "rows_in_source_batch": len(rows),
         }
         (target / f"{partition}.meta.json").write_text(
-            json.dumps(meta, indent=2) + "\n", encoding="utf-8"
+            json.dumps(meta, indent=2) + "\n", encoding="utf-8", newline="\n"
         )
         written.append(f"{dataset}/{partition}: {len(subset)} rows")
     return written

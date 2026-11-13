@@ -1,0 +1,22 @@
+model Model
+	culture: fr-FR
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: fr-FR
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+	annotation PBI_ProTooling = ["DevMode"]
+	annotation __PBI_TimeIntelligenceEnabled = 0
+
+ref table dim_institution
+ref table fct_filings
+ref table fct_filing_versions
+ref table rpt_filing_revisions
+ref table fct_failures
+ref table rpt_failure_signals
+ref table rpt_watchlist
+ref table rpt_reconciliation_qbp
+ref table rpt_batches
+ref table Mesures
+ref table Actualisation

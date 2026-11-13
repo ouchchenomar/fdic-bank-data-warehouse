@@ -1,0 +1,16 @@
+# Checks run before each commit: pip install pre-commit && pre-commit install
+# Lint only (no formatter), same ruff version as requirements-dev.txt.
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.17.5
+    hooks:
+      - id: ruff-check
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-yaml
+      - id: check-added-large-files
+        args: ["--maxkb=2048"]
+      - id: detect-private-key
+      - id: mixed-line-ending
+        args: ["--fix=lf"]

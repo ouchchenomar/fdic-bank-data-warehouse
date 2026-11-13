@@ -91,6 +91,35 @@ select
     f.net_chargeoffs_ratio_pct,
     f.tier1_leverage_ratio_pct,
 
+    -- QBP asset size groups (DWH-06 size filter)
+    case
+        when f.total_assets_kusd < 100000 then 'Under $100M'
+        when f.total_assets_kusd < 1000000 then '$100M-$1B'
+        when f.total_assets_kusd < 10000000 then '$1B-$10B'
+        when f.total_assets_kusd < 250000000 then '$10B-$250B'
+        else 'Over $250B'
+    end                                                   as asset_size_group,
+    case
+        when f.total_assets_kusd < 100000 then 1
+        when f.total_assets_kusd < 1000000 then 2
+        when f.total_assets_kusd < 10000000 then 3
+        when f.total_assets_kusd < 250000000 then 4
+        else 5
+    end                                                   as asset_size_order,
+
+    -- early-warning signals (DWH-08), thresholds in dbt_project.yml
+    coalesce(f.tier1_leverage_ratio_pct < {{ var('ew_tier1_leverage_min_pct') }}, false)
+                                                          as signal_capital,
+    coalesce(f.noncurrent_loans_ratio_pct > {{ var('ew_noncurrent_loans_max_pct') }}, false)
+                                                          as signal_asset_quality,
+    coalesce(f.roa_pct < {{ var('ew_roa_min_pct') }}, false)
+                                                          as signal_earnings,
+    coalesce(f.tier1_leverage_ratio_pct < {{ var('ew_tier1_leverage_min_pct') }}, false)::int
+      + coalesce(f.noncurrent_loans_ratio_pct > {{ var('ew_noncurrent_loans_max_pct') }}, false)::int
+      + coalesce(f.roa_pct < {{ var('ew_roa_min_pct') }}, false)::int
+                                                          as signal_count,
+    f.report_date = max(f.report_date) over ()            as is_latest_quarter,
+
     -- lineage: where the current values come from
     f.batch_id,
     f.batch_mode,
