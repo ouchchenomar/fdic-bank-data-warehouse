@@ -20,7 +20,7 @@ docker compose exec airflow airflow dags unpause fdic_warehouse   # le DAG est e
 docker compose --profile airflow stop airflow     # arrêter Airflow, la base reste démarrée
 ```
 
-Une fois sorti de pause, le DAG tourne chaque jour à 07:00 UTC, tant que le conteneur Airflow est démarré.
+À la sortie de pause, Airflow lance tout de suite l'exécution de la dernière échéance passée (constaté le 13/11/2026), puis une exécution par jour à 07:00 UTC. Les deux conteneurs ont la politique `restart: unless-stopped` : ils redémarrent avec Docker Desktop après un redémarrage du PC, sauf s'ils ont été arrêtés à la main. Pour que l'exécution quotidienne ait lieu, Docker Desktop doit donc se lancer à l'ouverture de session Windows.
 
 ## Exécution normale
 

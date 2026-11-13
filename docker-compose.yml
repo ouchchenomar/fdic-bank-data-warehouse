@@ -3,6 +3,8 @@ name: fdic-dwh
 services:
   postgres:
     image: postgres:16.15
+    # Back after a reboot or a Docker restart; "docker compose stop" still keeps it stopped.
+    restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-fdic_dwh}
       POSTGRES_USER: ${POSTGRES_USER:-fdic}
@@ -24,6 +26,8 @@ services:
       context: .
       dockerfile: docker/airflow/Dockerfile
     image: fdic-dwh-airflow:3.3.2
+    # The daily run needs the scheduler up: restart it with Docker unless stopped by hand.
+    restart: unless-stopped
     command: >
       bash -c "/opt/fdic-venv/bin/python /opt/fdic/docker/airflow/ensure_metadata_db.py
       && exec airflow standalone"
