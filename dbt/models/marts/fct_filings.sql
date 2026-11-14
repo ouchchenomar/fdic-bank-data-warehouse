@@ -2,6 +2,11 @@
 -- NETINC and INTINC are cumulated since January 1: the quarterly flow is this quarter minus
 -- the previous one of the same year, and equals the year-to-date amount in Q1.
 
+{% set insured = "coalesce(f.bank_class, '') not in ('NC', 'OI')" %}
+{% set capital = "f.tier1_leverage_ratio_pct < " ~ var('ew_tier1_leverage_min_pct') %}
+{% set asset_quality = "f.noncurrent_loans_ratio_pct > " ~ var('ew_noncurrent_loans_max_pct') %}
+{% set earnings = "f.roa_pct < " ~ var('ew_roa_min_pct') %}
+
 with current_filings as (
 
     select *
@@ -107,17 +112,20 @@ select
         else 5
     end                                                   as asset_size_order,
 
-    -- early-warning signals (DWH-08), thresholds in dbt_project.yml
-    coalesce(f.tier1_leverage_ratio_pct < {{ var('ew_tier1_leverage_min_pct') }}, false)
-                                                          as signal_capital,
-    coalesce(f.noncurrent_loans_ratio_pct > {{ var('ew_noncurrent_loans_max_pct') }}, false)
-                                                          as signal_asset_quality,
-    coalesce(f.roa_pct < {{ var('ew_roa_min_pct') }}, false)
-                                                          as signal_earnings,
-    coalesce(f.tier1_leverage_ratio_pct < {{ var('ew_tier1_leverage_min_pct') }}, false)::int
-      + coalesce(f.noncurrent_loans_ratio_pct > {{ var('ew_noncurrent_loans_max_pct') }}, false)::int
-      + coalesce(f.roa_pct < {{ var('ew_roa_min_pct') }}, false)::int
-                                                          as signal_count,
+    -- Same population as the QBP: insured institutions. Non-insured trust companies (NC) and
+    -- insured branches of foreign banks (OI) hold no capital of their own and report Tier 1,
+    -- equity and ROA as 0, which would read as false capital signals.
+    {{ insured }}                                         as is_insured_population,
+
+    -- early-warning signals (DWH-08) for insured institutions, thresholds in dbt_project.yml
+    {{ insured }} and coalesce({{ capital }}, false)      as signal_capital,
+    {{ insured }} and coalesce({{ asset_quality }}, false) as signal_asset_quality,
+    {{ insured }} and coalesce({{ earnings }}, false)     as signal_earnings,
+    case when {{ insured }} then
+        coalesce({{ capital }}, false)::int
+        + coalesce({{ asset_quality }}, false)::int
+        + coalesce({{ earnings }}, false)::int
+    else 0 end                                            as signal_count,
     f.report_date = max(f.report_date) over ()            as is_latest_quarter,
 
     -- lineage: where the current values come from

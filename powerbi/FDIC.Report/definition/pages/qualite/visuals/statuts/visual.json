@@ -189,11 +189,11 @@
                       "Entity": "Mesures"
                     }
                   },
-                  "Property": "LotsCharges"
+                  "Property": "Lots"
                 }
               },
-              "queryRef": "Mesures.LotsCharges",
-              "nativeQueryRef": "LotsCharges",
+              "queryRef": "Mesures.Lots",
+              "nativeQueryRef": "Lots",
               "displayName": "Lots"
             }
           ]
@@ -312,6 +312,13 @@
               "expr": {
                 "Literal": {
                   "Value": "10D"
+                }
+              }
+            },
+            "labelDisplayUnits": {
+              "expr": {
+                "Literal": {
+                  "Value": "1D"
                 }
               }
             }

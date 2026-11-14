@@ -72,6 +72,12 @@ table Mesures
 		displayFolder: Alerte précoce
 		formatString: 0
 
+	/// Lots enregistrés, tous statuts confondus.
+	measure Lots = COALESCE(COUNTROWS(rpt_batches), 0)
+		lineageTag: 873532b8-ecae-5a5e-809f-f53375e1dfeb
+		displayFolder: Qualité
+		formatString: 0
+
 	/// Lots chargés.
 	measure LotsCharges = COALESCE(CALCULATE(COUNTROWS(rpt_batches), rpt_batches[status] = "loaded"), 0)
 		lineageTag: 20d342fd-c6d9-55fb-9351-8b6b60060aa8

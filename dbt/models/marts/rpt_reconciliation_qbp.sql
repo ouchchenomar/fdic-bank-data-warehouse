@@ -15,7 +15,7 @@ with warehouse as (
         count(*)::numeric                        as insured_institutions,
         sum(net_income_qtr_kusd) / 1000000.0     as net_income_bn
     from {{ ref('fct_filings') }}
-    where coalesce(bank_class, '') not in ('NC', 'OI')
+    where is_insured_population
     group by report_date
 
 ),

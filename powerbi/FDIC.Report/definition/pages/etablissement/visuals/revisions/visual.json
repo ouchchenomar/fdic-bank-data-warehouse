@@ -174,8 +174,7 @@
               },
               "queryRef": "rpt_filing_revisions.report_date",
               "nativeQueryRef": "report_date",
-              "displayName": "Trimestre",
-              "active": true
+              "displayName": "Trimestre"
             },
             {
               "field": {
@@ -190,8 +189,7 @@
               },
               "queryRef": "rpt_filing_revisions.source_field",
               "nativeQueryRef": "source_field",
-              "displayName": "Champ",
-              "active": true
+              "displayName": "Champ"
             },
             {
               "field": {
@@ -206,8 +204,7 @@
               },
               "queryRef": "rpt_filing_revisions.previous_value",
               "nativeQueryRef": "previous_value",
-              "displayName": "Avant",
-              "active": true
+              "displayName": "Avant"
             },
             {
               "field": {
@@ -222,8 +219,7 @@
               },
               "queryRef": "rpt_filing_revisions.new_value",
               "nativeQueryRef": "new_value",
-              "displayName": "Après",
-              "active": true
+              "displayName": "Après"
             },
             {
               "field": {
@@ -238,8 +234,7 @@
               },
               "queryRef": "rpt_filing_revisions.change_kind",
               "nativeQueryRef": "change_kind",
-              "displayName": "Raison",
-              "active": true
+              "displayName": "Raison"
             }
           ]
         }

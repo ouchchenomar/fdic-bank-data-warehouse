@@ -115,6 +115,8 @@ MEASURES = [
     ("TroisSignaux",
      "COALESCE(CALCULATE(COUNTROWS(rpt_watchlist), rpt_watchlist[signal_count] = 3), 0)",
      "0", "Alerte précoce", "Banques du dernier trimestre avec les trois signaux."),
+    ("Lots", "COALESCE(COUNTROWS(rpt_batches), 0)",
+     "0", "Qualité", "Lots enregistrés, tous statuts confondus."),
     ("LotsCharges",
      'COALESCE(CALCULATE(COUNTROWS(rpt_batches), rpt_batches[status] = "loaded"), 0)',
      "0", "Qualité", "Lots chargés."),
@@ -311,8 +313,9 @@ def build_model(schema: dict[str, list[tuple[str, str]]]) -> None:
         "\tpartition Actualisation = m",
         "\t\tmode: import",
         "\t\tsource =",
-        '\t\t\t\tPostgreSQL.Database(ServeurPostgreSQL, BasePostgreSQL, [Query="SELECT '
-        "(now() at time zone 'UTC') AS actualise_le\"])",
+        # Refresh time computed in Power Query: no native SQL query, so no approval prompt.
+        "\t\t\t\t#table(type table [actualise_le = datetime],"
+        " {{DateTimeZone.RemoveZone(DateTimeZone.UtcNow())}})",
         "",
     ]))
     save(MODEL / "definition.pbism", {
@@ -464,7 +467,11 @@ class Page:
     def card(self, index, name, label, accent=TEAL):
         self.visual(f"kpi_{name.lower()}", "cardVisual", "", 32 + index * 352, 166, 320, 116,
                     {"Data": [measure(name, label)]},
-                    {"accentBar": [{
+                    {"value": [{
+                        "properties": {"labelDisplayUnits": literal(1)},
+                        "selector": {"id": "default"},
+                    }],
+                     "accentBar": [{
                         "properties": {"show": literal(True), "color": color(accent),
                                        "width": literal(4), "position": literal("Left")},
                         "selector": {"id": "default"},
@@ -479,6 +486,9 @@ class Page:
         })
 
     def table(self, key, title, x, y, width, height, fields, sort=None):
+        # A table shows only its "active" projections when one carries the flag: leave it out,
+        # or the measure columns disappear.
+        fields = [{k: v for k, v in f.items() if k != "active"} for f in fields]
         self.visual(key, "tableEx", title, x, y, width, height, {"Values": fields},
                     table_objects(), sort)
 
@@ -490,7 +500,8 @@ def chart_objects(labels=False):
                                    fontSize=literal(10)),
         "valueAxis": properties(showAxisTitle=literal(False), labelColor=color(GRAY),
                                 fontSize=literal(10), gridlineColor=color("#E6ECF2")),
-        "labels": properties(show=literal(labels), color=color(NAVY), fontSize=literal(10)),
+        "labels": properties(show=literal(labels), color=color(NAVY), fontSize=literal(10),
+                             labelDisplayUnits=literal(1)),
     }
 
 
@@ -665,7 +676,7 @@ def page_quality():
             ], (quarter, "Ascending"))
     status = column("rpt_batches", "status", "Statut")
     p.visual("statuts", "clusteredBarChart", "Lots par statut", 728, 298, 680, 300,
-             {"Category": [status], "Y": [measure("LotsCharges", "Lots")]},
+             {"Category": [status], "Y": [measure("Lots", "Lots")]},
              chart_objects(True))
     started = column("rpt_batches", "started_at", "Début")
     p.table("lots", "Registre des lots", 32, 614, 1376, 240, [

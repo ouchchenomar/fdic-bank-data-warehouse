@@ -174,8 +174,7 @@
               },
               "queryRef": "rpt_reconciliation_qbp.report_quarter_label",
               "nativeQueryRef": "report_quarter_label",
-              "displayName": "Trimestre",
-              "active": true
+              "displayName": "Trimestre"
             },
             {
               "field": {
@@ -190,8 +189,7 @@
               },
               "queryRef": "rpt_reconciliation_qbp.measure",
               "nativeQueryRef": "measure",
-              "displayName": "Mesure",
-              "active": true
+              "displayName": "Mesure"
             },
             {
               "field": {
@@ -206,8 +204,7 @@
               },
               "queryRef": "rpt_reconciliation_qbp.reference_value",
               "nativeQueryRef": "reference_value",
-              "displayName": "QBP",
-              "active": true
+              "displayName": "QBP"
             },
             {
               "field": {
@@ -222,8 +219,7 @@
               },
               "queryRef": "rpt_reconciliation_qbp.warehouse_value",
               "nativeQueryRef": "warehouse_value",
-              "displayName": "Entrepôt",
-              "active": true
+              "displayName": "Entrepôt"
             },
             {
               "field": {
@@ -238,8 +234,7 @@
               },
               "queryRef": "rpt_reconciliation_qbp.relative_gap",
               "nativeQueryRef": "relative_gap",
-              "displayName": "Écart",
-              "active": true
+              "displayName": "Écart"
             },
             {
               "field": {
@@ -254,8 +249,7 @@
               },
               "queryRef": "rpt_reconciliation_qbp.status",
               "nativeQueryRef": "status",
-              "displayName": "Statut",
-              "active": true
+              "displayName": "Statut"
             }
           ]
         }

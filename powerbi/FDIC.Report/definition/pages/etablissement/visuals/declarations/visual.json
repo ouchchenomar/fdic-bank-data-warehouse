@@ -174,8 +174,7 @@
               },
               "queryRef": "fct_filings.report_quarter_label",
               "nativeQueryRef": "report_quarter_label",
-              "displayName": "Trimestre",
-              "active": true
+              "displayName": "Trimestre"
             },
             {
               "field": {
@@ -190,8 +189,7 @@
               },
               "queryRef": "fct_filings.total_assets_kusd",
               "nativeQueryRef": "total_assets_kusd",
-              "displayName": "Actifs · k$",
-              "active": true
+              "displayName": "Actifs · k$"
             },
             {
               "field": {
@@ -206,8 +204,7 @@
               },
               "queryRef": "fct_filings.equity_capital_kusd",
               "nativeQueryRef": "equity_capital_kusd",
-              "displayName": "Fonds propres · k$",
-              "active": true
+              "displayName": "Fonds propres · k$"
             },
             {
               "field": {
@@ -222,8 +219,7 @@
               },
               "queryRef": "fct_filings.net_income_qtr_kusd",
               "nativeQueryRef": "net_income_qtr_kusd",
-              "displayName": "Résultat du trimestre · k$",
-              "active": true
+              "displayName": "Résultat du trimestre · k$"
             },
             {
               "field": {
@@ -238,8 +234,7 @@
               },
               "queryRef": "fct_filings.equity_to_assets_pct",
               "nativeQueryRef": "equity_to_assets_pct",
-              "displayName": "FP / actifs %",
-              "active": true
+              "displayName": "FP / actifs %"
             },
             {
               "field": {
@@ -254,8 +249,7 @@
               },
               "queryRef": "fct_filings.roa_pct",
               "nativeQueryRef": "roa_pct",
-              "displayName": "ROA %",
-              "active": true
+              "displayName": "ROA %"
             },
             {
               "field": {
@@ -270,8 +264,7 @@
               },
               "queryRef": "fct_filings.signal_count",
               "nativeQueryRef": "signal_count",
-              "displayName": "Signaux",
-              "active": true
+              "displayName": "Signaux"
             },
             {
               "field": {
@@ -286,8 +279,7 @@
               },
               "queryRef": "fct_filings.batch_id",
               "nativeQueryRef": "batch_id",
-              "displayName": "Lot source",
-              "active": true
+              "displayName": "Lot source"
             },
             {
               "field": {
@@ -302,8 +294,7 @@
               },
               "queryRef": "fct_filings.source_index_name",
               "nativeQueryRef": "source_index_name",
-              "displayName": "Index FDIC",
-              "active": true
+              "displayName": "Index FDIC"
             },
             {
               "field": {
@@ -318,8 +309,7 @@
               },
               "queryRef": "fct_filings.extracted_at",
               "nativeQueryRef": "extracted_at",
-              "displayName": "Extrait le",
-              "active": true
+              "displayName": "Extrait le"
             },
             {
               "field": {
@@ -334,8 +324,7 @@
               },
               "queryRef": "fct_filings.version_count",
               "nativeQueryRef": "version_count",
-              "displayName": "Versions",
-              "active": true
+              "displayName": "Versions"
             }
           ]
         }

@@ -174,8 +174,7 @@
               },
               "queryRef": "rpt_failure_signals.institution_name",
               "nativeQueryRef": "institution_name",
-              "displayName": "Banque",
-              "active": true
+              "displayName": "Banque"
             },
             {
               "field": {
@@ -190,8 +189,7 @@
               },
               "queryRef": "rpt_failure_signals.failure_date",
               "nativeQueryRef": "failure_date",
-              "displayName": "Faillite",
-              "active": true
+              "displayName": "Faillite"
             },
             {
               "field": {
@@ -206,8 +204,7 @@
               },
               "queryRef": "rpt_failure_signals.report_quarter_label",
               "nativeQueryRef": "report_quarter_label",
-              "displayName": "Trimestre",
-              "active": true
+              "displayName": "Trimestre"
             },
             {
               "field": {
@@ -222,8 +219,7 @@
               },
               "queryRef": "rpt_failure_signals.quarters_before_failure",
               "nativeQueryRef": "quarters_before_failure",
-              "displayName": "Trimestres avant",
-              "active": true
+              "displayName": "Trimestres avant"
             },
             {
               "field": {
@@ -238,8 +234,7 @@
               },
               "queryRef": "rpt_failure_signals.noncurrent_loans_ratio_pct",
               "nativeQueryRef": "noncurrent_loans_ratio_pct",
-              "displayName": "Prêts non perf. %",
-              "active": true
+              "displayName": "Prêts non perf. %"
             },
             {
               "field": {
@@ -254,8 +249,7 @@
               },
               "queryRef": "rpt_failure_signals.equity_to_assets_pct",
               "nativeQueryRef": "equity_to_assets_pct",
-              "displayName": "FP / actifs %",
-              "active": true
+              "displayName": "FP / actifs %"
             },
             {
               "field": {
@@ -270,8 +264,7 @@
               },
               "queryRef": "rpt_failure_signals.tier1_leverage_ratio_pct",
               "nativeQueryRef": "tier1_leverage_ratio_pct",
-              "displayName": "Levier Tier 1 %",
-              "active": true
+              "displayName": "Levier Tier 1 %"
             },
             {
               "field": {
@@ -286,8 +279,7 @@
               },
               "queryRef": "rpt_failure_signals.roa_pct",
               "nativeQueryRef": "roa_pct",
-              "displayName": "ROA %",
-              "active": true
+              "displayName": "ROA %"
             },
             {
               "field": {
@@ -302,8 +294,7 @@
               },
               "queryRef": "rpt_failure_signals.signal_count",
               "nativeQueryRef": "signal_count",
-              "displayName": "Signaux",
-              "active": true
+              "displayName": "Signaux"
             }
           ]
         }

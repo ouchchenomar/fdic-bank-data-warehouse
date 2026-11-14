@@ -223,6 +223,12 @@ table fct_filings
 		isHidden
 		formatString: 0
 
+	column is_insured_population
+		dataType: boolean
+		lineageTag: c132e775-9c5f-5418-900e-dae067b1daa9
+		summarizeBy: none
+		sourceColumn: is_insured_population
+
 	column signal_capital
 		dataType: boolean
 		lineageTag: 0430423f-4818-5a5d-8479-fddc0868fd18

@@ -117,7 +117,9 @@ Quatre des cinq faillites portaient au moins deux signaux dans leur dernière d�
 - des fonds propres à 1,3 % des actifs ;
 - un ROA de −6,9 %.
 
-Santa Anna National Bank montre la limite d'un filtre sur ratios : sa dernière déclaration paraissait saine. Au T2 2026, la liste de surveillance (`rpt_watchlist`) compte 25 banques avec au moins deux signaux. Trois portent les trois signaux, et sept en ont plus qu'au trimestre précédent.
+Santa Anna National Bank montre la limite d'un filtre sur ratios : sa dernière déclaration paraissait saine. Au T2 2026, la liste de surveillance (`rpt_watchlist`) compte 24 banques avec au moins deux signaux. Trois portent les trois signaux, et sept en ont plus qu'au trimestre précédent.
+
+Le filtre ne porte que sur les établissements assurés, la population du QBP. Les succursales de banques étrangères (classe OI) et les sociétés fiduciaires non assurées (classe NC) n'ont pas de fonds propres propres et déclarent Tier 1, fonds propres et ROA à 0. Lus comme des valeurs, ces zéros plaçaient l'activité américaine de Bank of China sur la liste, avec un faux signal de fonds propres.
 
 ## Rapprochement avec le Quarterly Banking Profile (REC-02)
 
@@ -161,7 +163,7 @@ python run.py ingest financials --quarters 2025Q1:2026Q2    # un lot par trimest
 python run.py ingest institutions
 python run.py ingest failures
 python run.py report                                        # registre des lots
-python run.py publish                                       # dbt build (64 tests de données), puis publication
+python run.py publish                                       # dbt build (65 tests de données), puis publication
 python run.py publications                                  # journal des publications
 python run.py ingest financials --last 4                    # réextraire la fenêtre de révision
 python -m pytest                                            # 64 tests

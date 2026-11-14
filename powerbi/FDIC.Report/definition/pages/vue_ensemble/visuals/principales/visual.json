@@ -174,8 +174,7 @@
               },
               "queryRef": "fct_filings.institution_name",
               "nativeQueryRef": "institution_name",
-              "displayName": "Banque",
-              "active": true
+              "displayName": "Banque"
             },
             {
               "field": {
@@ -190,8 +189,7 @@
               },
               "queryRef": "fct_filings.state_code",
               "nativeQueryRef": "state_code",
-              "displayName": "État",
-              "active": true
+              "displayName": "État"
             },
             {
               "field": {

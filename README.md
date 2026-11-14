@@ -134,7 +134,9 @@ Four of the five failures carried at least two signals in their last filing. Com
 - equity at 1.3% of assets;
 - ROA at −6.9%.
 
-Santa Anna National Bank shows the limit of a ratio screen: its last filing looked healthy. In Q2 2026, the watch list (`rpt_watchlist`) holds 25 banks with at least two signals. Three of them carry all three, and seven have more signals than in the quarter before.
+Santa Anna National Bank shows the limit of a ratio screen: its last filing looked healthy. In Q2 2026, the watch list (`rpt_watchlist`) holds 24 banks with at least two signals. Three of them carry all three, and seven have more signals than in the quarter before.
+
+The screen covers insured institutions only, the population of the QBP. Foreign-bank branches (class OI) and non-insured trust companies (class NC) hold no capital of their own and report Tier 1, equity and ROA as 0. Read as values, those zeros put Bank of China's U.S. operation on the watch list with a false capital signal.
 
 ## Reconciliation with the Quarterly Banking Profile (REC-02)
 
@@ -178,7 +180,7 @@ python run.py ingest financials --quarters 2025Q1:2026Q2    # one batch per quar
 python run.py ingest institutions
 python run.py ingest failures
 python run.py report                                        # batch register
-python run.py publish                                       # dbt build (64 data tests), then publish
+python run.py publish                                       # dbt build (65 data tests), then publish
 python run.py publications                                  # publication log
 python run.py ingest financials --last 4                    # extract the revision window again
 python -m pytest                                            # 64 tests

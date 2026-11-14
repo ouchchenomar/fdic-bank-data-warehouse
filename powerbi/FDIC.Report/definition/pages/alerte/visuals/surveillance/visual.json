@@ -174,8 +174,7 @@
               },
               "queryRef": "rpt_watchlist.institution_name",
               "nativeQueryRef": "institution_name",
-              "displayName": "Banque",
-              "active": true
+              "displayName": "Banque"
             },
             {
               "field": {
@@ -190,8 +189,7 @@
               },
               "queryRef": "rpt_watchlist.state_code",
               "nativeQueryRef": "state_code",
-              "displayName": "État",
-              "active": true
+              "displayName": "État"
             },
             {
               "field": {
@@ -206,8 +204,7 @@
               },
               "queryRef": "rpt_watchlist.asset_size_group",
               "nativeQueryRef": "asset_size_group",
-              "displayName": "Taille",
-              "active": true
+              "displayName": "Taille"
             },
             {
               "field": {
@@ -222,8 +219,7 @@
               },
               "queryRef": "rpt_watchlist.noncurrent_loans_ratio_pct",
               "nativeQueryRef": "noncurrent_loans_ratio_pct",
-              "displayName": "Prêts non perf. %",
-              "active": true
+              "displayName": "Prêts non perf. %"
             },
             {
               "field": {
@@ -238,8 +234,7 @@
               },
               "queryRef": "rpt_watchlist.tier1_leverage_ratio_pct",
               "nativeQueryRef": "tier1_leverage_ratio_pct",
-              "displayName": "Levier Tier 1 %",
-              "active": true
+              "displayName": "Levier Tier 1 %"
             },
             {
               "field": {
@@ -254,8 +249,7 @@
               },
               "queryRef": "rpt_watchlist.roa_pct",
               "nativeQueryRef": "roa_pct",
-              "displayName": "ROA %",
-              "active": true
+              "displayName": "ROA %"
             },
             {
               "field": {
@@ -270,8 +264,7 @@
               },
               "queryRef": "rpt_watchlist.signal_count",
               "nativeQueryRef": "signal_count",
-              "displayName": "Signaux",
-              "active": true
+              "displayName": "Signaux"
             },
             {
               "field": {
@@ -286,8 +279,7 @@
               },
               "queryRef": "rpt_watchlist.previous_signal_count",
               "nativeQueryRef": "previous_signal_count",
-              "displayName": "Trimestre précédent",
-              "active": true
+              "displayName": "Trimestre précédent"
             }
           ]
         }

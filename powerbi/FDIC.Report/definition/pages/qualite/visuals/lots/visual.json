@@ -174,8 +174,7 @@
               },
               "queryRef": "rpt_batches.batch_id",
               "nativeQueryRef": "batch_id",
-              "displayName": "Lot",
-              "active": true
+              "displayName": "Lot"
             },
             {
               "field": {
@@ -190,8 +189,7 @@
               },
               "queryRef": "rpt_batches.mode",
               "nativeQueryRef": "mode",
-              "displayName": "Mode",
-              "active": true
+              "displayName": "Mode"
             },
             {
               "field": {
@@ -206,8 +204,7 @@
               },
               "queryRef": "rpt_batches.status",
               "nativeQueryRef": "status",
-              "displayName": "Statut",
-              "active": true
+              "displayName": "Statut"
             },
             {
               "field": {
@@ -222,8 +219,7 @@
               },
               "queryRef": "rpt_batches.contract_version",
               "nativeQueryRef": "contract_version",
-              "displayName": "Contrat",
-              "active": true
+              "displayName": "Contrat"
             },
             {
               "field": {
@@ -238,8 +234,7 @@
               },
               "queryRef": "rpt_batches.rows_announced",
               "nativeQueryRef": "rows_announced",
-              "displayName": "Annoncées",
-              "active": true
+              "displayName": "Annoncées"
             },
             {
               "field": {
@@ -254,8 +249,7 @@
               },
               "queryRef": "rpt_batches.rows_loaded",
               "nativeQueryRef": "rows_loaded",
-              "displayName": "Chargées",
-              "active": true
+              "displayName": "Chargées"
             },
             {
               "field": {
@@ -270,8 +264,7 @@
               },
               "queryRef": "rpt_batches.duration_seconds",
               "nativeQueryRef": "duration_seconds",
-              "displayName": "Durée · s",
-              "active": true
+              "displayName": "Durée · s"
             },
             {
               "field": {
@@ -286,8 +279,7 @@
               },
               "queryRef": "rpt_batches.started_at",
               "nativeQueryRef": "started_at",
-              "displayName": "Début",
-              "active": true
+              "displayName": "Début"
             },
             {
               "field": {
@@ -302,8 +294,7 @@
               },
               "queryRef": "rpt_batches.error",
               "nativeQueryRef": "error",
-              "displayName": "Erreur",
-              "active": true
+              "displayName": "Erreur"
             }
           ]
         }

@@ -60,6 +60,13 @@ models:
       - name: version_count
         description: Number of distinct contents observed for this filing, see fct_filing_versions.
         data_tests: [not_null]
+      - name: is_insured_population
+        description: >
+          True for insured institutions, the population of the Quarterly Banking Profile: false
+          for non-insured trust companies (class NC) and insured branches of foreign banks
+          (class OI). Those hold no capital of their own and report Tier 1, equity and ROA as 0,
+          so the early-warning signals are not computed for them.
+        data_tests: [not_null]
 
   - name: fct_filing_versions
     description: >

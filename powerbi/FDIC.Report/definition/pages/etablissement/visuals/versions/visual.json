@@ -174,8 +174,7 @@
               },
               "queryRef": "fct_filing_versions.report_date",
               "nativeQueryRef": "report_date",
-              "displayName": "Trimestre",
-              "active": true
+              "displayName": "Trimestre"
             },
             {
               "field": {
@@ -190,8 +189,7 @@
               },
               "queryRef": "fct_filing_versions.version_number",
               "nativeQueryRef": "version_number",
-              "displayName": "Version",
-              "active": true
+              "displayName": "Version"
             },
             {
               "field": {
@@ -206,8 +204,7 @@
               },
               "queryRef": "fct_filing_versions.change_kind",
               "nativeQueryRef": "change_kind",
-              "displayName": "Raison",
-              "active": true
+              "displayName": "Raison"
             },
             {
               "field": {
@@ -222,8 +219,7 @@
               },
               "queryRef": "fct_filing_versions.changed_fields",
               "nativeQueryRef": "changed_fields",
-              "displayName": "Champs modifiés",
-              "active": true
+              "displayName": "Champs modifiés"
             },
             {
               "field": {
@@ -238,8 +234,7 @@
               },
               "queryRef": "fct_filing_versions.batch_id",
               "nativeQueryRef": "batch_id",
-              "displayName": "Lot",
-              "active": true
+              "displayName": "Lot"
             },
             {
               "field": {
@@ -254,8 +249,7 @@
               },
               "queryRef": "fct_filing_versions.valid_from",
               "nativeQueryRef": "valid_from",
-              "displayName": "Depuis",
-              "active": true
+              "displayName": "Depuis"
             }
           ]
         }

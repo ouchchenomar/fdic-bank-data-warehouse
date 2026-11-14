@@ -11,4 +11,4 @@ table Actualisation
 	partition Actualisation = m
 		mode: import
 		source =
-				PostgreSQL.Database(ServeurPostgreSQL, BasePostgreSQL, [Query="SELECT (now() at time zone 'UTC') AS actualise_le"])
+				#table(type table [actualise_le = datetime], {{DateTimeZone.RemoveZone(DateTimeZone.UtcNow())}})

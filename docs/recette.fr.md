@@ -158,7 +158,7 @@ Trois signaux par déclaration, avec des seuils indicatifs (variables dbt) : rat
 | Kentland FS&LA (28722) | 10/07/2026 | T1 2026 | 1,66 % | 6,30 % | −4,77 % | 3 |
 | Small Business Bank (25744) | 17/07/2026 | T1 2026 | 4,83 % | 4,81 % | −4,29 % | 2 |
 
-Le cas de référence (CERT 25796, au 31/03/2026) est retrouvé : 17,3 % de prêts non performants, fonds propres à 1,3 % des actifs, ROA de −6,9 %. Pulaski Savings Bank, en faillite le 17/01/2025, n'a aucune déclaration chargée avant cette date. La liste de surveillance du T2 2026 compte 25 banques avec au moins deux signaux.
+Le cas de référence (CERT 25796, au 31/03/2026) est retrouvé : 17,3 % de prêts non performants, fonds propres à 1,3 % des actifs, ROA de −6,9 %. Pulaski Savings Bank, en faillite le 17/01/2025, n'a aucune déclaration chargée avant cette date. La liste de surveillance du T2 2026 compte 24 banques avec au moins deux signaux. Les signaux ne sont calculés que pour les établissements assurés (`is_insured_population`) : les classes OI et NC déclarent Tier 1, fonds propres et ROA à 0, ce qui donnait un faux signal de fonds propres pour Bank of China (relevé dans Power BI le 14/11/2026).
 
 ## Accès en lecture seule
 
@@ -166,4 +166,4 @@ Le rôle `fdic_reader`, utilisé par Power BI, lit les vues du schéma `publishe
 
 ## Hors ligne
 
-Le même parcours tourne sans internet sur une base vide, à partir de l'échantillon versionné (14 CERT). `python run.py check` l'exécute dans une base jetable, après le lint et les tests : 8 lots chargés, 81 nœuds dbt réussis (dont 64 tests de données), 68 déclarations publiées, en 20 secondes au total.
+Le même parcours tourne sans internet sur une base vide, à partir de l'échantillon versionné (14 CERT). `python run.py check` l'exécute dans une base jetable, après le lint et les tests : 8 lots chargés, 82 nœuds dbt réussis (dont 65 tests de données), 68 déclarations publiées, en 20 secondes au total.
