@@ -1,6 +1,6 @@
-# Recette · semaines 1 à 3
+# Procès-verbal de recette
 
-Exécutée les 12 et 13/11/2026 sur les données réelles de l'API FDIC, dans la base locale (PostgreSQL 16, Docker). Les critères REC-01 à REC-08 viennent du [cahier des charges](specification.fr.md).
+Exécutée du 12 au 14/11/2026 sur les données réelles de l'API FDIC, dans la base locale (PostgreSQL 16, Docker). Les critères REC-01 à REC-08 viennent du [cahier des charges](specification.fr.md).
 
 ## Synthèse
 
@@ -13,7 +13,7 @@ Exécutée les 12 et 13/11/2026 sur les données réelles de l'API FDIC, dans la
 | REC-05 · Source incomplète | Validé | Couvert par les tests automatisés, et sur données réelles par le T3 2026 vide. Le lot est refusé, et la publication en cours reste lue. |
 | REC-06 · Cohérence des ratios | Validé | 52 769 contrôles sans écart. Un écart injecté bloque la publication. |
 | REC-07 · Flux trimestriel | Validé | Wells Fargo, T2 2026 : 6 847 000 milliers de $ dans `published.fct_filings`. |
-| REC-08 · Nouveau trimestre | En attente | Le T3 2026 renvoie encore 0 ligne le 13/11/2026. Le DAG le tente chaque jour et marque la tâche *skipped*. |
+| REC-08 · Nouveau trimestre | En attente | Le T3 2026 renvoie encore 0 ligne le 14/11/2026. Le DAG le tente chaque jour et marque la tâche *skipped*. |
 
 ## REC-01 · Couverture
 
@@ -143,6 +143,8 @@ Exécutions du 13/11/2026 :
 |---|---|---|---|
 | Quotidienne | 53 s | `2026Q3` *skipped* | Référentiels en doublon, publication `pub_20261113T130802855z` |
 | Avec fenêtre de révision | 75 s | `2025Q3` à `2026Q2` en doublon, `2026Q3` *skipped* | Aucune révision FDIC, publication réussie |
+
+Le DAG tourne ensuite sur son planning. Les exécutions planifiées du 13/11 et du 14/11/2026 (07:00 UTC) ont réussi. Celle du 14/11, manquée pendant que la machine était éteinte, a été rattrapée au redémarrage.
 
 Le chargement du T3 2026 lui-même reste à constater dès sa publication. Les trimestres déjà publiés ne sont pas retraités : `plan_quarters` ne retient que les trimestres terminés depuis le dernier chargé, sauf la fenêtre de révision du lundi.
 

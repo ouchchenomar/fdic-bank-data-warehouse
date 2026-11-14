@@ -1,4 +1,4 @@
--- Week 3: read-only role for the dashboard. It reads the published views and nothing else,
+-- Read-only role for the dashboard. It reads the published views and nothing else,
 -- so Power BI never sees a mart while dbt is building it. Idempotent.
 -- run.py db-init enables its login when FDIC_READER_PASSWORD is set in .env.
 

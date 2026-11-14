@@ -43,6 +43,11 @@ table Mesures
 		displayFolder: Bilan
 		formatString: 0.00%
 
+	/// Banque affichée par la fiche établissement.
+	measure BanqueSelectionnee = IF(HASONEVALUE(dim_institution[cert]), SELECTEDVALUE(dim_institution[institution_name]) & "  ·  CERT " & FORMAT(SELECTEDVALUE(dim_institution[cert]), "0") & "  ·  " & SELECTEDVALUE(dim_institution[city]) & ", " & SELECTEDVALUE(dim_institution[state_code]), "Toutes les banques")
+		lineageTag: 08dea01b-2e20-5d1a-97b5-f6ebde9aacff
+		displayFolder: Bilan
+
 	/// Dernier trimestre du contexte.
 	measure DonneesAu = "Données au " & FORMAT(MAX(fct_filings[report_date]), "dd/MM/yyyy")
 		lineageTag: c6815792-3652-55a4-b03b-95139f265146

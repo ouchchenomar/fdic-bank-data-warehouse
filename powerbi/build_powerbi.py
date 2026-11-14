@@ -54,6 +54,8 @@ RELATIONSHIPS = [
     ("fct_failures", "cert", "dim_institution", "cert"),
     ("fct_filing_versions", "filing_id", "fct_filings", "filing_id"),
     ("rpt_filing_revisions", "filing_id", "fct_filings", "filing_id"),
+    ("rpt_watchlist", "cert", "dim_institution", "cert"),
+    ("rpt_failure_signals", "cert", "dim_institution", "cert"),
 ]
 TYPES = {
     "integer": "int64",
@@ -101,6 +103,12 @@ MEASURES = [
      at_last_quarter("AVERAGE(fct_filings[noncurrent_loans_ratio_pct])", "100"),
      "0.00%", "Bilan",
      "Taux de prêts non performants publié ; moyenne simple si plusieurs banques."),
+    ("BanqueSelectionnee",
+     'IF(HASONEVALUE(dim_institution[cert]), SELECTEDVALUE(dim_institution[institution_name]) '
+     '& "  ·  CERT " & FORMAT(SELECTEDVALUE(dim_institution[cert]), "0") & "  ·  " '
+     '& SELECTEDVALUE(dim_institution[city]) & ", " & SELECTEDVALUE(dim_institution[state_code]), '
+     '"Toutes les banques")',
+     "", "Bilan", "Banque affichée par la fiche établissement."),
     ("DonneesAu", '"Données au " & FORMAT(MAX(fct_filings[report_date]), "dd/MM/yyyy")',
      "", "Bilan", "Dernier trimestre du contexte."),
     ("FaillitesCouvertes", "COALESCE(DISTINCTCOUNT(rpt_failure_signals[failure_id]), 0)",
@@ -395,11 +403,11 @@ def container(title, background=WHITE):
 
 
 class Page:
-    def __init__(self, key, title, subtitle, footer):
+    def __init__(self, key, title, subtitle, footer, drillthrough=None):
         self.key = key
         self.path = REPORT / "definition" / "pages" / key
         self.index = 0
-        save(self.path / "page.json", {
+        page = {
             "$schema": SCHEMA_URL + "definition/page/2.0.0/schema.json",
             "name": key,
             "displayName": title,
@@ -410,7 +418,28 @@ class Page:
                 "background": properties(color=color(PALE), transparency=literal(0)),
                 "outspace": properties(color=color(PALE)),
             },
-        })
+        }
+        if drillthrough:
+            # Right-click on a row that carries the field, then Drill through > this page. Only
+            # the drilled value flows in: the source page's other filters are left behind.
+            page["filterConfig"] = {"filters": [{
+                "name": f"{key}_extraction",
+                "field": drillthrough["field"],
+                "type": "Categorical",
+                "howCreated": "Drillthrough",
+            }]}
+            page["pageBinding"] = {
+                "name": f"{key}_cible",
+                "type": "Drillthrough",
+                "referenceScope": "Default",
+                "acceptsFilterContext": "None",
+                "parameters": [{
+                    "name": f"{key}_parametre",
+                    "boundFilter": f"{key}_extraction",
+                    "fieldExpr": drillthrough["field"],
+                }],
+            }
+        save(self.path / "page.json", page)
         self.text("header", f"FDIC  /  {title.upper()}", 32, 24, 1376, 56, 24, WHITE, NAVY,
                   bold=True)
         self.text("subtitle", subtitle, 32, 87, 440, 64, 12, GRAY)
@@ -477,6 +506,36 @@ class Page:
                         "selector": {"id": "default"},
                     }]})
 
+    def back_button(self, x, y, width, height):
+        d = self.visual("retour", "actionButton", "", x, y, width, height, objects={
+            "icon": [{"properties": {"shapeType": literal("back"), "lineColor": color(WHITE)},
+                      "selector": {"id": "default"}}],
+            "text": [{"properties": {"show": literal(True), "text": literal("Retour"),
+                                     "fontColor": color(WHITE), "fontSize": literal(11)},
+                      "selector": {"id": "default"}}],
+            "fill": [{"properties": {"show": literal(False)}, "selector": {"id": "default"}}],
+            "outline": [{"properties": {"show": literal(False)}, "selector": {"id": "default"}}],
+        })
+        d["visual"]["visualContainerObjects"] = {
+            "visualLink": properties(show=literal(True), type=literal("Back")),
+            "background": properties(show=literal(False)),
+            "border": properties(show=literal(False)),
+            "visualHeader": properties(show=literal(False)),
+        }
+        d["howCreated"] = "InsertVisualButton"
+        save(self.path / "visuals" / "retour" / "visual.json", d)
+
+    def label(self, key, name, x, y, width, height):
+        d = self.visual(key, "card", "", x, y, width, height, {"Values": [measure(name)]}, {
+            "labels": properties(color=color(NAVY), fontSize=literal(16), fontFamily=literal(
+                "Segoe UI Semibold")),
+            "categoryLabels": properties(show=literal(False)),
+            "wordWrap": properties(show=literal(True)),
+        })
+        d["visual"]["visualContainerObjects"]["padding"] = properties(
+            top=literal(4), bottom=literal(4), left=literal(16), right=literal(16))
+        save(self.path / "visuals" / key / "visual.json", d)
+
     def slicer(self, key, label, field, x, width=296, single=False):
         self.visual(key, "slicer", label, x, 94, width, 62, {"Values": [field]}, {
             "data": properties(mode=literal("Dropdown")),
@@ -519,6 +578,9 @@ def table_objects():
     }
 
 
+CERT = column("dim_institution", "cert", "CERT")
+
+
 def page_overview():
     p = Page(
         "vue_ensemble", "Vue d'ensemble",
@@ -552,6 +614,7 @@ def page_overview():
     assets = measure("ActifsMd", "Actifs · Md$")
     p.table("principales", "Principales banques", 488, 574, 920, 280, [
         column("fct_filings", "institution_name", "Banque"),
+        CERT,
         column("fct_filings", "state_code", "État"),
         assets,
         measure("FondsPropresSurActifs", "Fonds propres / actifs"),
@@ -563,13 +626,15 @@ def page_overview():
 def page_institution():
     p = Page(
         "etablissement", "Fiche établissement",
-        "Choisir une banque : chaque chiffre remonte à son lot source.",
+        "Clic droit sur une banque d'une autre page, puis Extraire > Fiche établissement. "
+        "Chaque chiffre remonte à son lot source.",
         "Lot : extraction de l'API FDIC qui a fourni la valeur courante (batch_id, version de "
         "l'index FDIC, date d'extraction). Versions : chaque contenu distinct observé, avec sa "
         "raison (initial, changement de contrat, révision FDIC, simulation).",
+        drillthrough=CERT,
     )
-    p.slicer("filtre_banque", "Banque", column("dim_institution", "institution_name", "Banque"),
-             488, 920, single=True)
+    p.back_button(1292, 32, 108, 40)
+    p.label("banque", "BanqueSelectionnee", 488, 87, 920, 64)
     for i, (name, label) in enumerate([
         ("ActifsMd", "Actifs · Md$"),
         ("FondsPropresSurActifs", "Fonds propres / actifs"),
@@ -627,6 +692,7 @@ def page_early_warning():
     failure = column("rpt_failure_signals", "failure_date", "Faillite")
     p.table("historique", "Déclarations avant chaque faillite", 32, 298, 1376, 280, [
         column("rpt_failure_signals", "institution_name", "Banque"),
+        CERT,
         failure,
         column("rpt_failure_signals", "report_quarter_label", "Trimestre"),
         column("rpt_failure_signals", "quarters_before_failure", "Trimestres avant"),
@@ -639,6 +705,7 @@ def page_early_warning():
     signals = column("rpt_watchlist", "signal_count", "Signaux")
     p.table("surveillance", "Liste de surveillance · dernier trimestre", 32, 594, 1376, 260, [
         column("rpt_watchlist", "institution_name", "Banque"),
+        CERT,
         column("rpt_watchlist", "state_code", "État"),
         column("rpt_watchlist", "asset_size_group", "Taille"),
         column("rpt_watchlist", "noncurrent_loans_ratio_pct", "Prêts non perf. %"),

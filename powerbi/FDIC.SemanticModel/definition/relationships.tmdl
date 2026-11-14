@@ -17,3 +17,13 @@ relationship abbf24ef-1795-57a3-b8d0-5364d9355618
 	fromColumn: rpt_filing_revisions.filing_id
 	toColumn: fct_filings.filing_id
 	crossFilteringBehavior: oneDirection
+
+relationship 04a03261-4f5d-5cd7-9cdc-e085b9935bac
+	fromColumn: rpt_watchlist.cert
+	toColumn: dim_institution.cert
+	crossFilteringBehavior: oneDirection
+
+relationship 48fb3937-e506-5b25-9a6f-190b73ec4321
+	fromColumn: rpt_failure_signals.cert
+	toColumn: dim_institution.cert
+	crossFilteringBehavior: oneDirection

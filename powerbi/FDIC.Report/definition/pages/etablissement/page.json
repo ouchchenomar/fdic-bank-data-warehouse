@@ -47,5 +47,46 @@
         }
       }
     ]
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "etablissement_extraction",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "dim_institution"
+              }
+            },
+            "Property": "cert"
+          }
+        },
+        "type": "Categorical",
+        "howCreated": "Drillthrough"
+      }
+    ]
+  },
+  "pageBinding": {
+    "name": "etablissement_cible",
+    "type": "Drillthrough",
+    "referenceScope": "Default",
+    "acceptsFilterContext": "None",
+    "parameters": [
+      {
+        "name": "etablissement_parametre",
+        "boundFilter": "etablissement_extraction",
+        "fieldExpr": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "dim_institution"
+              }
+            },
+            "Property": "cert"
+          }
+        }
+      }
+    ]
   }
 }

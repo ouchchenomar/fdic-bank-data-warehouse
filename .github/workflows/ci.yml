@@ -1,6 +1,6 @@
 # Same checks as `python run.py check`: lint, tests, then an offline end-to-end run
 # (sample loaded into a scratch database, dbt build, publication).
-# Started by hand from the Actions tab for now; locally, run `python run.py check`.
+# Started on demand from the Actions tab; locally, run `python run.py check`.
 name: ci
 
 on:

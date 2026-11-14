@@ -1,6 +1,6 @@
 # Cahier des charges · Entrepôt de données bancaires FDIC
 
-**Version 1.1 · 12 novembre 2026 · Projet personnel d'Omar Ouchchen**
+**Version 1.2 · 14 novembre 2026 · Auteur : Omar Ouchchen**
 
 ## 1. Contexte et objectif
 
@@ -67,7 +67,7 @@ Les champs suivants ont été vérifiés le 12/11/2026 sur `financials`.
 | DWH-01 | Extraire les trimestres par pagination stable : pages de 1 000 lignes triées par `CERT`. Archiver chaque fichier brut avec date, URL, paramètres, nombre de lignes, empreinte et version de la source (`meta.index`). Vérifier la couverture du total annoncé. |
 | DWH-02 | Normaliser identifiants, dates et montants selon le contrat de données. Contrôler l'unicité du couple CERT–REPDTE. Expliquer les lignes non appariées et conserver la distinction entre zéro et donnée manquante. |
 | DWH-03 | Construire une dimension des établissements historisée (snapshot dbt, SCD2), une table des déclarations trimestrielles, un modèle de flux trimestriels pour les champs cumulés et une vue d'exploitation. Relier chaque valeur au lot dont elle provient. |
-| DWH-04 | Détecter les révisions réelles. Chaque semaine, rejouer les quatre derniers trimestres et comparer une empreinte par ligne. Conserver la version précédente, le nouveau lot, la version de la source et la date d'observation du changement. Une correction injectée pour la démo est identifiée comme simulée. La fréquence observée des révisions fait partie du rapport. |
+| DWH-04 | Détecter les révisions réelles. Chaque semaine, rejouer les quatre derniers trimestres et comparer une empreinte par ligne. Conserver la version précédente, le nouveau lot, la version de la source et la date d'observation du changement. Une correction injectée pour la recette est identifiée comme simulée. La fréquence observée des révisions fait partie du rapport. |
 | DWH-05 | Publier une période uniquement après validation des volumes, du schéma, des clés et de la cohérence des ratios. La période est construite dans un schéma de lot, testée, puis rendue visible par bascule de la vue `published` dans une transaction. En cas d'échec, le dernier état publié est conservé et la relance part des données brutes. |
 | DWH-06 | Afficher un tableau de bord : actifs, dépôts et indicateurs par trimestre, filtres par État et par taille, accès au détail d'un établissement jusqu'à son lot source. |
 | DWH-07 | Recalculer les ratios publiés à partir de leurs composantes et les rapprocher avec une tolérance documentée. Vérifié le 12/11 pour Wells Fargo au 30/06/2026 : EQ / ASSET = 8,885 %, égal au `EQV` publié ; LNLSNET / DEP = 62,93 %, égal au `LNLSDEPR` publié. Les écarts figurent dans le rapport de lot. |
@@ -91,7 +91,7 @@ Les champs suivants ont été vérifiés le 12/11/2026 sur `financials`.
 | **Python et PostgreSQL** | Extraction, registre de lots et entrepôt. [Python](https://docs.python.org/3/license.html) · [PostgreSQL](https://www.postgresql.org/about/licence/) |
 | **dbt Core et dbt-postgres** | Transformations SQL, snapshots, contrôles, documentation et lignage. [dbt Core](https://github.com/dbt-labs/dbt-core) · [Adaptateur PostgreSQL](https://github.com/dbt-labs/dbt-adapters/tree/main/dbt-postgres) |
 | **Apache Airflow** | Planification, historique et relance paramétrée. [Airflow](https://airflow.apache.org/) |
-| **Power BI Desktop** | Tableau de bord et extraction détaillée (drillthrough). Le fichier `.pbix`, un export PDF et des captures sont versionnés. |
+| **Power BI Desktop** | Tableau de bord et extraction détaillée (drillthrough). Le projet `.pbip` (modèle TMDL, rapport PBIR) est généré par script et versionné. |
 | **Docker Compose** | Démarrage local reproductible |
 
 **Exploitation.**
@@ -125,22 +125,22 @@ Les champs suivants ont été vérifiés le 12/11/2026 sur `financials`.
 | REC-07 · Flux trimestriel | Le résultat net du T2 2026 de Wells Fargo vaut 12 808 000 − 5 961 000 = 6 847 000 milliers de $. |
 | REC-08 · Nouveau trimestre | Le T3 2026 se charge sans retraiter les trimestres déjà publiés, dès sa publication par la FDIC. |
 
-## 7. Jalons et livrables
+## 7. Lots de livraison et livrables
 
-1. **Semaine 1** — contrat de données, échantillon hors ligne, ingestion paginée, registre de lots avec version de la source.
-2. **Semaine 2** — modèles dbt, snapshot de la dimension, flux trimestriels, rapprochement et cohérence des ratios, reprise et historisation des révisions.
-3. **Semaine 3** — orchestration Airflow, tableau de bord et page d'alerte précoce, guide d'exploitation, CI, vidéo de reprise d'un lot.
+1. **Lot 1** — contrat de données, échantillon hors ligne, ingestion paginée, registre de lots avec version de la source.
+2. **Lot 2** — modèles dbt, snapshot de la dimension, flux trimestriels, rapprochement et cohérence des ratios, reprise et historisation des révisions.
+3. **Lot 3** — orchestration Airflow, tableau de bord et page d'alerte précoce, guide d'exploitation, CI.
 
 **Livrables du dépôt :**
 
 - README en français et en anglais, avec un schéma d'architecture.
 - Contrat de données.
-- Deux ou trois décisions d'architecture (ADR) : publication par bascule, snapshot dbt, choix d'Airflow.
+- Décisions d'architecture (ADR) : idempotence des lots, versions des déclarations, publication par bascule, orchestration par Airflow.
 - Documentation dbt et graphe de lignage, publiés sur GitHub Pages.
 - Guide d'exploitation : relancer un trimestre, rejouer un lot, restaurer l'état publié.
-- Vidéo de trois minutes.
+- Procès-verbal de recette.
 
-**Preuve portfolio.**
+**Démonstrations attendues.**
 
 - Remonter d'un chiffre du tableau de bord jusqu'à la publication FDIC et au lot qui l'a chargé.
 - Montrer comment le système préserve le dernier résultat validé lors d'un échec.
@@ -151,4 +151,5 @@ Les champs suivants ont été vérifiés le 12/11/2026 sur `financials`.
 | Version | Date | Changements |
 |---|---|---|
 | 1.0 | 11/11/2026 | Version initiale |
-| 1.1 | 12/11/2026 | Périmètre étendu au T2 2026 et au T3 en incrémental. Ajout du contrat de données, du catalogue d'indicateurs, de DWH-07 (cohérence des ratios) et DWH-08 (alerte précoce), des exigences non fonctionnelles et de REC-06 à REC-08. Révisions réelles dans DWH-04, publication par bascule dans DWH-05, SCD2 en V1. Power BI remplace Metabase, Docker Compose remplace Podman. Phrase HSBC reformulée. |
+| 1.1 | 12/11/2026 | Périmètre étendu au T2 2026 et au T3 en incrémental. Ajout du contrat de données, du catalogue d'indicateurs, de DWH-07 (cohérence des ratios) et DWH-08 (alerte précoce), des exigences non fonctionnelles et de REC-06 à REC-08. Révisions réelles dans DWH-04, publication par bascule dans DWH-05, SCD2 en V1. Power BI remplace Metabase, Docker Compose remplace Podman. |
+| 1.2 | 14/11/2026 | Version de livraison. Jalons exprimés en lots, livrables alignés sur le dépôt : projet Power BI `.pbip`, quatre ADR, procès-verbal de recette. |

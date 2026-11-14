@@ -1,36 +1,60 @@
 # Entrepôt de données bancaires FDIC
 
+![Python 3.12](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
+![PostgreSQL 16](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)
+![dbt 1.12](https://img.shields.io/badge/dbt-1.12-FF694B?logo=dbt&logoColor=white)
+![Airflow 3.3](https://img.shields.io/badge/Airflow-3.3-017CEE?logo=apacheairflow&logoColor=white)
+![Power BI](https://img.shields.io/badge/Power%20BI-PBIP-F2C811?logo=powerbi&logoColor=black)
+![Licence MIT](https://img.shields.io/badge/Licence-MIT-green)
+
 *[English version](README.md)*
 
-Ce projet charge dans un entrepôt PostgreSQL les déclarations trimestrielles d'environ 4 400 banques américaines, publiées par la FDIC. Chaque chiffre remonte jusqu'au fichier et au lot qui l'ont chargé. Rejouer un fichier ne duplique jamais les données. Une valeur révisée devient une nouvelle version sans effacer l'ancienne. Le tableau de bord ne lit que ce qui a passé tous les tests : un build en échec laisse intact le dernier état publié.
+Cet entrepôt charge dans PostgreSQL les déclarations trimestrielles d'environ 4 400 banques américaines, publiées par la FDIC. Chaque chiffre remonte jusqu'au fichier et au lot qui l'ont chargé. Rejouer un fichier ne duplique jamais les données. Une valeur révisée devient une nouvelle version sans effacer l'ancienne. Le tableau de bord ne lit que ce qui a passé tous les tests : un build en échec laisse intact le dernier état publié.
 
-**État au 13/11/2026 : les trois semaines prévues sont livrées.**
-- Semaine 1 : ingestion, registre de lots et contrat de données.
-- Semaine 2 : historique des versions, dimension SCD2, flux trimestriels, marts et publication contrôlée.
-- Semaine 3 : orchestration Airflow, tableau de bord Power BI avec une page d'alerte précoce, rapprochement avec le Quarterly Banking Profile de la FDIC, guide d'exploitation et contrôles de CI.
+## En bref
 
-Tout tourne sur les données réelles. Documentation :
-- le scénario de recette : [docs/recette.fr.md](docs/recette.fr.md) ;
-- le guide d'exploitation : [docs/runbook.fr.md](docs/runbook.fr.md) ;
-- la **documentation dbt et le graphe de lignage** : [ouchchenomar.github.io/fdic-bank-data-warehouse/](https://ouchchenomar.github.io/fdic-bank-data-warehouse/).
+| | |
+|---|---|
+| **Couverture** | 26 559 déclarations trimestrielles de 4 547 banques, du T1 2025 au T2 2026 ; 27 835 établissements ; 4 117 faillites depuis 1934 |
+| **Technologies** | Python 3.12, PostgreSQL 16, dbt 1.12, Airflow 3.3, Power BI, Docker Compose |
+| **Qualité** | un contrat de données vérifié avant chaque chargement, 65 tests de données dbt qui conditionnent la publication, 64 tests Python |
+| **Rapprochement** | 12 contrôles sur 12 à moins de 0,5 % du Quarterly Banking Profile de la FDIC |
+| **Alerte précoce** | 4 des 5 faillites bancaires de 2025-2026 portaient au moins deux signaux dans leur dernière déclaration |
+| **Exploitation** | une exécution Airflow quotidienne, une fenêtre de révision hebdomadaire, le retour à la publication précédente en une commande |
 
-Deux points dépendent d'événements extérieurs, voir [ce qui reste](#ce-qui-reste).
+## Documentation
 
-## Données chargées
+| Document | Contenu |
+|---|---|
+| [Documentation dbt](https://ouchchenomar.github.io/fdic-bank-data-warehouse/) | chaque modèle et chaque colonne, avec le graphe de lignage |
+| [Cahier des charges](docs/specification.fr.md) | exigences, modèle de données et critères de recette |
+| [Procès-verbal de recette](docs/recette.fr.md) | chaque test de recette avec son résultat sur données réelles |
+| [Guide d'exploitation](docs/runbook.fr.md) | exploitation courante, incidents et reprise |
+| [Décisions d'architecture](docs/adr) | quatre ADR : idempotence, versions, publication contrôlée, orchestration (en anglais) |
+| [Journal des versions](CHANGELOG.md) | notes de version (en anglais) |
 
-| Jeu | Endpoint FDIC | Contenu au 12/11/2026 |
-|---|---|---|
-| Déclarations trimestrielles | `/financials` | 26 559 déclarations de 4 547 banques, du T1 2025 au T2 2026, 23 champs |
-| Établissements | `/institutions` | 27 835 établissements, actifs ou non |
-| Faillites | `/failures` | 4 117 faillites et opérations d'assistance depuis 1934 |
+## Architecture
 
-Le contrat de données ([contracts/fdic.yml](contracts/fdic.yml), version 2) fixe pour chaque champ le type, l'unité, la nullabilité et le sens. Chaque champ a été vérifié sur l'API réelle.
-
-## Fonctionnement
+```mermaid
+flowchart LR
+    AF{{DAG Airflow<br/>quotidien, une tâche par trimestre}} -.->|run.py| PY
+    API[API FDIC BankFind] -->|paginée, relancée| PY[Ingestion Python]
+    SAMPLE[(Échantillon hors ligne)] -.->|--offline| PY
+    PY --> FILES[(Fichiers bruts canoniques<br/>+ manifeste + SHA-256)]
+    PY --> REG[(ops.batch<br/>registre des lots)]
+    PY -->|contrat respecté| RAW[(raw.* jsonb)]
+    RAW --> STG[staging dbt]
+    STG --> INT[versions des déclarations<br/>snapshot SCD2]
+    INT --> MARTS[(marts)]
+    MARTS -->|tous les tests passent| PUB[(vues publiées<br/>→ pub_horodatage)]
+    MARTS -.->|un test échoue| REF[refus :<br/>publication inchangée]
+    QBP[(Référence QBP<br/>seed dbt)] --> MARTS
+    PUB -->|rôle en lecture seule| PBI[Power BI]
+```
 
 1. **Extraction.** Pages de 1 000 lignes, triées sur une clé stable. Relance avec attente croissante sur les erreurs 429, 5xx et réseau, en respectant `Retry-After`. Si la FDIC reconstruit son index pendant la pagination, le lot est refusé.
 2. **Archivage.** Chaque lot écrit un fichier JSON Lines canonique (même contenu, mêmes octets) et un manifeste : URL, paramètres, total annoncé, version de la source, version du contrat et SHA-256.
-3. **Contrôle.** Avant tout chargement, le lot est vérifié : champs du contrat, clés non vides et uniques, types et formats de date, total annoncé.
+3. **Contrôle.** Avant tout chargement, le lot est vérifié contre le [contrat de données](contracts/fdic.yml) : champs du contrat, clés non vides et uniques, types, formats de date et total annoncé.
 4. **Chargement.** Si l'empreinte du fichier est celle du dernier lot chargé, la tentative est tracée comme `duplicate` et rien n'est chargé. Sinon, les lignes sont copiées dans `raw.*` dans la même transaction que le statut `loaded`.
 5. **Staging (dbt).** Typage, noms métier avec suffixe d'unité (`_kusd`, `_pct`) et tests.
 6. **Versions (DWH-04).** Chaque contenu distinct d'une déclaration est une version, avec la raison de son existence :
@@ -38,47 +62,87 @@ Le contrat de données ([contracts/fdic.yml](contracts/fdic.yml), version 2) fix
    - `contract_change` : le contrat a ajouté des champs, aucune valeur n'a changé ;
    - `revision` : la FDIC a modifié une valeur ;
    - `simulated` et `restored_after_simulation` : une correction de test et son annulation.
-
-   `rpt_filing_revisions` montre chaque champ modifié avec l'ancienne valeur, la nouvelle et l'écart.
-7. **Marts.**
-   - `fct_filings` contient la version courante de chaque déclaration, issue du dernier lot chargé de son trimestre. On y trouve les flux trimestriels tirés des montants cumulés, et le lignage de chaque ligne : lot, version de l'index FDIC et version du contrat.
-   - `dim_institution` couvre tous les CERT, et `dim_institution_history` en garde l'historique SCD2, construit par un snapshot dbt.
-   - `fct_failures` ajoute à chaque faillite la dernière déclaration de la banque avant sa chute.
+7. **Marts.** Faits, dimensions et rapports, décrits dans [le modèle de données publié](#modèle-de-données-publié).
 8. **Publication contrôlée (DWH-05).** `run.py publish` lance `dbt build` :
    - si un test échoue, la tentative est tracée comme `refused` et les vues publiées ne changent pas ;
    - sinon, les marts sont copiés dans un nouveau schéma `pub_<horodatage>`, et les vues du schéma `published` basculent dessus dans une seule transaction ;
    - les trois dernières publications sont conservées, et `publish --rollback` revient à la précédente.
-9. **Orchestration.** Le DAG Airflow `fdic_warehouse` tourne tous les jours à 07:00 UTC :
-   - il extrait les établissements, les faillites, et chaque trimestre terminé depuis le dernier chargé, avec une tâche par trimestre ;
-   - le lundi, il réextrait aussi les quatre derniers trimestres, pour capter les révisions ;
-   - puis il publie.
+9. **Orchestration.** Un DAG Airflow lance les mêmes commandes `run.py` qu'un opérateur, voir [Exploitation](#exploitation).
+10. **Tableau de bord.** Power BI lit les vues `published` avec le rôle `fdic_reader`, qui ne peut rien lire d'autre.
 
-   Un trimestre que la FDIC n'a pas encore publié finit en *skipped*, pas en échec. Chaque tâche lance une commande `run.py`, la même qu'à la main ([ADR 0004](docs/adr/0004-airflow-orchestration-of-cli-commands.md)).
-10. **Tableau de bord.** Power BI lit les vues `published` avec le rôle `fdic_reader`, qui ne peut rien lire d'autre. Le script `powerbi/build_powerbi.py` génère le projet (`powerbi/FDIC.pbip` : un modèle TMDL et un rapport PBIR) à partir du schéma publié. Il a quatre pages :
-    - vue d'ensemble, avec des filtres par État et par taille ;
-    - fiche établissement, jusqu'au lot source de chaque chiffre ;
-    - alerte précoce ;
-    - qualité et lignage.
+## Modèle de données publié
 
-Les choix de conception sont dans [docs/adr](docs/adr). Le cahier des charges complet est [docs/specification.fr.md](docs/specification.fr.md).
+Le schéma `published` contient dix vues. Les montants sont en milliers de dollars (`_kusd`), les ratios en pourcentage (`_pct`).
 
-## Ce que les données réelles ont montré
+| Vue | Une ligne par | Contenu |
+|---|---|---|
+| `fct_filings` | banque et trimestre, version courante | bilan, résultat, ratios publiés, flux trimestriels tirés des montants cumulés, signaux d'alerte, lignage (lot, version de l'index FDIC, version du contrat) |
+| `fct_filing_versions` | contenu distinct d'une déclaration | numéro de version, raison, champs modifiés, lot source |
+| `rpt_filing_revisions` | champ modifié entre deux versions | ancienne valeur, nouvelle valeur, écart |
+| `dim_institution` | établissement (CERT) | nom, localisation, classe, régulateur, dates clés |
+| `dim_institution_history` | établissement et période de validité | historique SCD2 des attributs, construit par un snapshot dbt |
+| `fct_failures` | faillite depuis 1934 | date, perte estimée, dernière déclaration de la banque avant sa chute |
+| `rpt_failure_signals` | déclaration d'une banque défaillante avant sa faillite | les trois signaux d'alerte |
+| `rpt_watchlist` | banque du dernier trimestre avec au moins deux signaux | signaux, ratios, signaux du trimestre précédent |
+| `rpt_reconciliation_qbp` | trimestre et mesure | Quarterly Banking Profile de la FDIC contre l'entrepôt, écart et statut |
+| `rpt_batches` | lot | registre de chaque tentative d'extraction, avec son statut |
 
-Constats tirés des exécutions du 12/11/2026. Chacun est traité dans le code ou les tests.
+## Tableau de bord
 
-- **Unités.** Les montants sont en milliers de dollars : l'`ASSET` de Wells Fargo, 1 907 928 000, vaut 1 908 milliards de dollars.
-- **Résultat cumulé.** `NETINC` est cumulé depuis le 1er janvier. Le résultat du T2 2026 de Wells Fargo vaut 12 808 000 − 5 961 000 = 6 847 000 milliers de dollars, et non 12 808 000. `fct_filings` calcule le flux du trimestre, et un test dbt vérifie que les flux d'une année ont pour somme son cumul.
-- **Les ratios publiés concordent avec leurs composantes.** 52 769 contrôles comparent EQ / ASSET à `EQV` et LNLSNET / DEP à `LNLSDEPR`, sans aucun écart supérieur à 0,01 point. La FDIC publie 0 quand les dépôts sont nuls : les 349 déclarations sans dépôts sont donc écartées du contrôle. 340 d'entre elles viennent de sociétés fiduciaires (classe NC).
-- **Les 57 déclarants absents de `/institutions` sont des sociétés fiduciaires.** 57 banques (332 déclarations) figurent dans `/financials` mais pas dans `/institutions`. Toutes ont la classe NC : ce sont surtout des trust companies non assurées, comme BlackRock Institutional Trust Company. La version 2 du contrat ajoute le nom, l'État, la ville et la classe déclarés avec chaque déclaration, et `dim_institution` les utilise pour ces 57 CERT.
-- **Ajouter un champ n'est pas une révision.** Après le changement de contrat, les six trimestres ont été rechargés, et les 26 559 déclarations ont reçu une deuxième version. Elle est étiquetée `contract_change`, avec 0 valeur modifiée, car une version n'est comparée que sur les champs présents des deux côtés.
-- **La clé des faillites a dû changer.** 488 faillites de 1934 à 1976 n'ont pas de CERT, et 44 CERT ont fait faillite deux fois. Le contrat a refusé le premier lot. La clé est désormais l'identifiant d'enregistrement FDIC (`ID`). Comme on ne peut ni le demander ni trier dessus, cette petite table est lue en une seule page.
-- **Un trimestre non publié est refusé proprement.** Le T3 2026 renvoyait encore 0 ligne le 12/11/2026 : le lot est noté en échec et rien ne change en aval.
-- **Aucune révision observée pour l'instant.** La réextraction des quatre derniers trimestres le 12/11/2026 a donné quatre doublons.
-- **Formats de date différents.** `REPDTE` vaut `20260630` dans `/financials` et `06/30/2026` dans `/institutions`. `FAILDATE` vaut `5/1/2026`.
+`python powerbi/build_powerbi.py` génère le projet Power BI à partir du schéma publié : un modèle sémantique TMDL (9 tables, 6 relations, 19 mesures) et un rapport PBIR de quatre pages.
 
-## Orchestration, sur données réelles
+| Page | Contenu |
+|---|---|
+| Vue d'ensemble | actifs, dépôts et résultat trimestriel du secteur, filtres par trimestre, État et taille, principales banques |
+| Fiche établissement | une banque, atteinte par clic droit sur n'importe quelle banque des autres pages, puis *Extraire* : chaque chiffre avec son lot source, les versions de chaque déclaration et les valeurs modifiées |
+| Alerte précoce | les déclarations des banques défaillantes avant leur faillite, et la liste de surveillance du dernier trimestre |
+| Qualité et lignage | rapprochement avec le Quarterly Banking Profile, lots par statut, registre des lots |
 
-Exécution du 13/11/2026 (`airflow dags test fdic_warehouse`), 53 secondes du début à la fin :
+## Démarrage
+
+Prérequis : Python 3.12 ou plus, Docker.
+
+```bash
+python -m venv .venv
+.venv/Scripts/python -m pip install -r requirements-dev.txt   # Linux/macOS : .venv/bin/python
+cp .env.example .env            # puis définir les mots de passe
+docker compose up -d            # PostgreSQL 16 sur 127.0.0.1:5435
+```
+
+Ensuite, avec le Python de l'environnement virtuel :
+
+```bash
+python run.py db-init                                       # schémas ops et raw, journal des publications
+python run.py ingest financials --quarters 2025Q1:2026Q2    # un lot par trimestre
+python run.py ingest institutions
+python run.py ingest failures
+python run.py publish                                       # dbt build, puis publication
+python run.py report                                        # registre des lots
+python run.py publications                                  # journal des publications
+```
+
+**Sans internet**, sur une base vide, on charge l'échantillon versionné, puis on publie. L'échantillon est construit sur 14 CERT : les cinq plus grandes banques, les six faillites de 2025-2026, et trois cas limites (dépôts nuls, prêts nuls, une société fiduciaire absente de `/institutions`).
+
+```bash
+python run.py ingest all --quarters 2025Q1:2026Q2 --offline
+python run.py publish
+```
+
+**Power BI.** Ouvrir `powerbi/FDIC.pbip` dans Power BI Desktop et l'actualiser avec l'utilisateur `fdic_reader` et le mot de passe `FDIC_READER_PASSWORD` du fichier `.env`.
+
+## Exploitation
+
+```bash
+docker compose --profile airflow up -d airflow                    # Airflow 3.3 sur http://127.0.0.1:8096
+docker compose exec airflow airflow dags unpause fdic_warehouse   # en pause à sa création
+```
+
+Le DAG `fdic_warehouse` tourne tous les jours à 07:00 UTC :
+- il extrait les établissements, les faillites, et chaque trimestre terminé depuis le dernier chargé, avec une tâche par trimestre ;
+- le lundi, il réextrait aussi les quatre derniers trimestres, pour capter les révisions ;
+- puis il publie, édite le registre des lots et contrôle la fraîcheur des sources.
+
+Un trimestre que la FDIC n'a pas encore publié finit en *skipped*, pas en échec. Chaque tâche lance une commande `run.py`, la même qu'à la main ([ADR 0004](docs/adr/0004-airflow-orchestration-of-cli-commands.md)). Une exécution manquée pendant que la machine était éteinte est rattrapée au redémarrage, et les deux conteneurs redémarrent avec Docker. Exécution du 13/11/2026, 53 secondes du début à la fin :
 
 ```text
 migrate                  success
@@ -90,14 +154,32 @@ publish                  success   [published] pub_20261113T130802855z
 report, check_freshness  success
 ```
 
-Avec la fenêtre de révision (`--conf '{"revision_window": true}'`), l'exécution a pris 75 secondes :
-- cinq tâches de trimestre ont tourné, de `2025Q3` à `2026Q3` ;
-- les quatre trimestres publiés sont revenus en doublons : la FDIC n'a rien révisé cette semaine-là ;
-- `2026Q3` a été marqué *skipped*.
+Le [guide d'exploitation](docs/runbook.fr.md) décrit comment relancer un trimestre, rejouer un lot, restaurer l'état publié, et ce que signifie chaque message d'erreur du pipeline.
 
-## Alerte précoce, testée sur les faillites réelles
+## Qualité et tests
 
-Chaque déclaration porte trois signaux (DWH-08). Les seuils sont des variables dbt indicatives, pas une notation prudentielle :
+- **Contrat de données.** [contracts/fdic.yml](contracts/fdic.yml) (version 2) fixe pour chaque champ le type, l'unité, la nullabilité et le sens. Chaque champ a été vérifié sur l'API réelle. Un lot qui ne le respecte pas est refusé et tracé avec sa raison.
+- **Tests dbt.** 65 tests de données passent avant chaque publication : clés, relations, valeurs admises, ratios publiés contre leurs composantes, flux trimestriels dont la somme égale le cumul, et aucune valeur simulée dans les données publiées.
+- **Tests Python.** 64 tests : tests unitaires, client HTTP simulé, et tests sur PostgreSQL.
+- **Une seule commande.** `python run.py check` lance le linter, les tests, et un parcours complet hors ligne (échantillon, dbt build, publication) dans une base jetable. Le workflow GitHub Actions lance le même contrôle à la demande, et des hooks pre-commit vérifient chaque commit.
+
+## Résultats sur données réelles
+
+### Ce que les données ont montré
+
+Constats tirés des exécutions du 12/11/2026. Chacun est traité dans le code ou les tests.
+
+- **Unités.** Les montants sont en milliers de dollars : l'`ASSET` de Wells Fargo, 1 907 928 000, vaut 1 908 milliards de dollars.
+- **Résultat cumulé.** `NETINC` est cumulé depuis le 1er janvier. Le résultat du T2 2026 de Wells Fargo vaut 12 808 000 − 5 961 000 = 6 847 000 milliers de dollars, et non 12 808 000. `fct_filings` calcule le flux du trimestre.
+- **Les ratios publiés concordent avec leurs composantes.** 52 769 contrôles comparent EQ / ASSET à `EQV` et LNLSNET / DEP à `LNLSDEPR`, sans aucun écart supérieur à 0,01 point. La FDIC publie 0 quand les dépôts sont nuls : les 349 déclarations sans dépôts sont donc écartées du contrôle. 340 d'entre elles viennent de sociétés fiduciaires (classe NC).
+- **Les 57 déclarants absents de `/institutions` sont des sociétés fiduciaires.** 57 banques (332 déclarations) figurent dans `/financials` mais pas dans `/institutions`. Toutes ont la classe NC : ce sont surtout des trust companies non assurées, comme BlackRock Institutional Trust Company. La version 2 du contrat ajoute le nom, l'État, la ville et la classe déclarés avec chaque déclaration, et `dim_institution` les utilise pour ces 57 CERT.
+- **Ajouter un champ n'est pas une révision.** Après le changement de contrat, les six trimestres ont été rechargés, et les 26 559 déclarations ont reçu une deuxième version. Elle est étiquetée `contract_change`, avec 0 valeur modifiée, car une version n'est comparée que sur les champs présents des deux côtés.
+- **La clé des faillites a dû changer.** 488 faillites de 1934 à 1976 n'ont pas de CERT, et 44 CERT ont fait faillite deux fois. Le contrat a refusé le premier lot. La clé est désormais l'identifiant d'enregistrement FDIC (`ID`). Comme on ne peut ni le demander ni trier dessus, cette petite table est lue en une seule page.
+- **Formats de date différents.** `REPDTE` vaut `20260630` dans `/financials` et `06/30/2026` dans `/institutions`. `FAILDATE` vaut `5/1/2026`.
+
+### Alerte précoce, testée sur les faillites réelles
+
+Chaque déclaration porte trois signaux (DWH-08). Les seuils sont des variables dbt :
 - **fonds propres** : ratio de levier Tier 1 sous 5 % ;
 - **qualité des actifs** : prêts non performants au-dessus de 5 % des prêts ;
 - **rentabilité** : ROA négatif.
@@ -112,22 +194,15 @@ Chaque déclaration porte trois signaux (DWH-08). Les seuils sont des variables 
 | Small Business Bank (25744) | 17/07/2026 | 2 (T1 2026) | T1 2026, 1 trimestre avant |
 | Santa Anna National Bank (5520) | 27/06/2025 | 0 (T1 2025) | aucune |
 
-Quatre des cinq faillites portaient au moins deux signaux dans leur dernière déclaration. Community Bank and Trust est le cas de référence du cahier des charges. Au 31/03/2026, elle affiche :
-- 17,3 % de prêts non performants ;
-- des fonds propres à 1,3 % des actifs ;
-- un ROA de −6,9 %.
+Community Bank and Trust est le cas de référence du cahier des charges. Au 31/03/2026, elle affiche 17,3 % de prêts non performants, des fonds propres à 1,3 % des actifs et un ROA de −6,9 %.
 
-Santa Anna National Bank montre la limite d'un filtre sur ratios : sa dernière déclaration paraissait saine. Au T2 2026, la liste de surveillance (`rpt_watchlist`) compte 24 banques avec au moins deux signaux. Trois portent les trois signaux, et sept en ont plus qu'au trimestre précédent.
+Au T2 2026, la liste de surveillance (`rpt_watchlist`) compte 24 banques avec au moins deux signaux. Trois portent les trois signaux, et sept en ont plus qu'au trimestre précédent.
 
-Le filtre ne porte que sur les établissements assurés, la population du QBP. Les succursales de banques étrangères (classe OI) et les sociétés fiduciaires non assurées (classe NC) n'ont pas de fonds propres propres et déclarent Tier 1, fonds propres et ROA à 0. Lus comme des valeurs, ces zéros plaçaient l'activité américaine de Bank of China sur la liste, avec un faux signal de fonds propres.
+Le filtre ne porte que sur les établissements assurés, la population du QBP. Les succursales de banques étrangères (classe OI) et les sociétés fiduciaires non assurées (classe NC) n'ont pas de fonds propres propres et déclarent Tier 1, fonds propres et ROA à 0. Lus comme des valeurs, ces zéros placeraient l'activité américaine de Bank of China sur la liste, avec un faux signal de fonds propres.
 
-## Rapprochement avec le Quarterly Banking Profile (REC-02)
+### Rapprochement avec le Quarterly Banking Profile (REC-02)
 
-Chaque trimestre, la FDIC publie les totaux du secteur dans son Quarterly Banking Profile (QBP). Le seed dbt `qbp_reference` reprend deux chiffres des communiqués QBP pour six trimestres, chacun avec son URL :
-- le nombre d'établissements assurés ;
-- le résultat net du trimestre.
-
-`rpt_reconciliation_qbp` les compare aux déclarations publiées :
+Chaque trimestre, la FDIC publie les totaux du secteur dans son Quarterly Banking Profile (QBP). Le seed dbt `qbp_reference` reprend deux chiffres des communiqués QBP pour six trimestres, chacun avec son URL : le nombre d'établissements assurés et le résultat net du trimestre. `rpt_reconciliation_qbp` les compare aux déclarations publiées :
 
 | Trimestre | Établissements assurés, QBP / entrepôt | Résultat net en Md$, QBP / entrepôt |
 |---|---|---|
@@ -138,60 +213,11 @@ Chaque trimestre, la FDIC publie les totaux du secteur dans son Quarterly Bankin
 | T1 2026 | 4 278 / 4 279 (+1) | 80,5 / 80,45 |
 | T2 2026 | 4 238 / 4 238 | 90,1 / 90,20 (+0,11 %) |
 
-Les 12 contrôles sont dans la tolérance de 0,5 %, et 7 sont égaux à l'arrondi publié près. Les effectifs ne concordent qu'une fois deux classes écartées, car le QBP ne les compte pas parmi les établissements assurés :
-- les sociétés fiduciaires non assurées (classe NC) ;
-- les succursales américaines assurées de banques étrangères (classe OI).
+Les 12 contrôles sont dans la tolérance de 0,5 %, et 7 sont égaux à l'arrondi publié près. Les effectifs ne concordent qu'une fois deux classes écartées, car le QBP ne les compte pas parmi les établissements assurés : les sociétés fiduciaires non assurées (classe NC) et les succursales américaines assurées de banques étrangères (classe OI).
 
-Le cahier des charges demande aussi un rapprochement de dix couples banque–trimestre avec les Call Reports du FFIEC. Il reste ouvert : les sites du FFIEC ont répondu HTTP 403 depuis le réseau utilisé pour ce projet.
+### Révision et contrôle de publication
 
-## Démarrage
-
-Prérequis : Python 3.12 ou plus, Docker.
-
-```bash
-python -m venv .venv
-.venv/Scripts/python -m pip install -r requirements-dev.txt   # Linux/macOS : .venv/bin/python
-cp .env.example .env            # puis définir POSTGRES_PASSWORD
-docker compose up -d            # PostgreSQL 16 sur 127.0.0.1:5435
-```
-
-Ensuite, avec le Python de l'environnement virtuel :
-
-```bash
-python run.py db-init                                       # schémas ops et raw, journal des publications
-python run.py ingest financials --quarters 2025Q1:2026Q2    # un lot par trimestre
-python run.py ingest institutions
-python run.py ingest failures
-python run.py report                                        # registre des lots
-python run.py publish                                       # dbt build (65 tests de données), puis publication
-python run.py publications                                  # journal des publications
-python run.py ingest financials --last 4                    # réextraire la fenêtre de révision
-python -m pytest                                            # 64 tests
-python run.py check                                         # lint, tests, parcours hors ligne complet (comme la CI)
-```
-
-**Airflow** (Airflow 3.3 sous Docker, sur http://127.0.0.1:8096) :
-
-```bash
-docker compose --profile airflow up -d airflow
-docker compose exec airflow airflow dags unpause fdic_warehouse   # en pause à sa création
-```
-
-**Power BI** : `python powerbi/build_powerbi.py` écrit le projet. Ouvrir `powerbi/FDIC.pbip` dans Power BI Desktop et l'actualiser avec l'utilisateur `fdic_reader` et le mot de passe `FDIC_READER_PASSWORD` du fichier `.env`.
-
-**Sans internet**, sur une base vide, on charge l'échantillon versionné, puis on publie. L'échantillon est construit sur 14 CERT :
-- les cinq plus grandes banques ;
-- les six faillites de 2025-2026 ;
-- trois cas limites : dépôts nuls, prêts nuls, et une société fiduciaire absente de `/institutions`.
-
-```bash
-python run.py ingest all --quarters 2025Q1:2026Q2 --offline
-python run.py publish
-```
-
-## Révision et contrôle de publication, sur données réelles
-
-Exécution du 12/11/2026 (scénario complet dans [docs/recette.fr.md](docs/recette.fr.md)). Une correction simulée augmente de 10 % les fonds propres de Wells Fargo au T2 2026, sans toucher au ratio publié :
+Exécution du 12/11/2026 (scénario complet dans le [procès-verbal de recette](docs/recette.fr.md)). Une correction simulée augmente de 10 % les fonds propres de Wells Fargo au T2 2026, sans toucher au ratio publié :
 
 ```text
 $ python run.py simulate-revision --quarter 2026Q2 --cert 3511 --field EQ --change-pct 10
@@ -219,11 +245,33 @@ L'historique garde chaque étape :
        4 | restored_after_simulation | api        | EQ    | 186469800 | 169518000 | -16951800
 ```
 
+### Registre des lots
+
+`python run.py report` montre chaque tentative, y compris les refusées. Extrait du 12/11/2026 :
+
+```text
+batch_id                                  status     mode       announced  extracted  rejected  loaded
+financials_20260630_20261112T195405170Z   loaded     api        4313       4313       0         4313
+financials_20260630_20261112T195337261Z   loaded     simulated  4313       4313       0         4313
+financials_20260630_20261112T195322904Z   duplicate  api        4313       4313       0         0
+    same file as financials_20260630_20261112T194225991Z: nothing loaded
+financials_20260930_20261112T194315128Z   failed     api        0          0          0
+    error: the source announces 0 rows for this partition (not published yet?)
+failures_all_20261112T192250099Z          failed     api        4117       4117       488
+    error: row 1: key field CERT is empty; [...]
+```
+
+## Limites connues
+
+- **Couverture.** Les déclarations commencent au T1 2025. Le T3 2026 n'était pas encore publié par la FDIC le 14/11/2026 ; l'exécution quotidienne le chargera dès sa publication.
+- **Rapprochement par banque.** Le cahier des charges demande aussi de vérifier dix couples banque–trimestre avec les Call Reports du FFIEC. Ce contrôle n'est pas fait : les sites du FFIEC ont répondu HTTP 403 depuis le réseau utilisé pour ce projet. Le rapprochement au niveau du secteur, ci-dessus, est complet.
+- **Alerte précoce.** Les seuils sont indicatifs, pas une notation prudentielle. Un filtre sur ratios manque une banque dont les déclarations paraissent saines jusqu'à sa faillite, comme le montre Santa Anna National Bank.
+
 ## Organisation du dépôt
 
 ```text
 contracts/fdic.yml          contrat de données (champs, unités, clés, contrôles de ratios), version 2
-sql/                        registre ops.batch, tables brutes, journal des publications
+sql/                        registre ops.batch, tables brutes, journal des publications, rôle en lecture seule
 src/fdic_dwh/               client, sources, contrôles, pipeline, simulation, publication, CLI
 dbt/models/staging/         vues typées sur les données brutes
 dbt/models/intermediate/    versions des déclarations, derniers établissements
@@ -236,16 +284,12 @@ docker/airflow/             image Airflow, avec le projet dans son propre enviro
 powerbi/                    projet Power BI (modèle TMDL, rapport PBIR) et le script qui le génère
 data/sample/                échantillon hors ligne (versionné) ; data/raw/ n'est pas versionné
 tests/                      tests unitaires, HTTP simulé et PostgreSQL
-.github/workflows/ci.yml    le contrôle run.py check, lancé à la main
-docs/                       cahier des charges, recette, guide d'exploitation et décisions d'architecture
+.github/workflows/ci.yml    le contrôle run.py check, lancé à la demande
+docs/                       cahier des charges, procès-verbal de recette, guide d'exploitation et décisions d'architecture
 ```
 
-## Ce qui reste
+## Source des données et licence
 
-- **T3 2026 (REC-08).** L'exécution quotidienne chargera le trimestre dès que la FDIC le publiera. Rien n'est à changer.
-- **Rapprochement par banque (REC-02).** Dix couples banque–trimestre restent à vérifier avec les Call Reports du FFIEC, depuis un réseau que le site du FFIEC accepte.
-- **Captures du tableau de bord.** Captures d'écran, export PDF, et une vidéo de trois minutes sur la reprise d'un lot.
+[API FDIC BankFind Suite](https://api.fdic.gov/banks/docs/) : données publiques de la Federal Deposit Insurance Corporation américaine, sans clé d'API. Les chiffres du rapprochement viennent des communiqués du Quarterly Banking Profile de la FDIC, listés avec leur URL dans [dbt/seeds/qbp_reference.csv](dbt/seeds/qbp_reference.csv).
 
-## Source des données
-
-[API FDIC BankFind Suite](https://api.fdic.gov/banks/docs/). Données publiques de la Federal Deposit Insurance Corporation américaine, sans clé d'API. Les chiffres du rapprochement viennent des communiqués du Quarterly Banking Profile de la FDIC, listés avec leur URL dans [dbt/seeds/qbp_reference.csv](dbt/seeds/qbp_reference.csv). Le code est sous licence MIT, qui ne couvre pas les données.
+Le code est sous [licence MIT](LICENSE), qui ne couvre pas les données.

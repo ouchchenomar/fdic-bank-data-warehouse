@@ -1,4 +1,4 @@
--- Week 2: contract version per batch and publication log. Idempotent.
+-- Contract version per batch and publication log. Idempotent.
 
 -- A change of contract (new field) must not be mistaken for a revision by the banks.
 alter table ops.batch add column if not exists contract_version integer not null default 1;

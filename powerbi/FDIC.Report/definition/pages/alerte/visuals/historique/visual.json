@@ -181,6 +181,21 @@
                 "Column": {
                   "Expression": {
                     "SourceRef": {
+                      "Entity": "dim_institution"
+                    }
+                  },
+                  "Property": "cert"
+                }
+              },
+              "queryRef": "dim_institution.cert",
+              "nativeQueryRef": "cert",
+              "displayName": "CERT"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
                       "Entity": "rpt_failure_signals"
                     }
                   },

@@ -49,7 +49,7 @@ class FdicClient:
         self.max_retries = max_retries
         self.backoff_base = backoff_base
         self.session = session or requests.Session()
-        self.session.headers.setdefault("User-Agent", "fdic-dwh/0.1 (portfolio project)")
+        self.session.headers.setdefault("User-Agent", "fdic-dwh/1.0")
         self.sleep = sleep
 
     def _delay(self, attempt: int, retry_after: str | None) -> float:

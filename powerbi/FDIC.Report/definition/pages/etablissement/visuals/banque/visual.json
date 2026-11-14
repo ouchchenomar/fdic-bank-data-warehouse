@@ -1,16 +1,16 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.4.0/schema.json",
-  "name": "filtre_banque",
+  "name": "banque",
   "position": {
     "x": 488,
-    "y": 94,
+    "y": 87,
     "width": 920,
-    "height": 62,
-    "z": 4000,
-    "tabOrder": 4
+    "height": 64,
+    "z": 5000,
+    "tabOrder": 5
   },
   "visual": {
-    "visualType": "slicer",
+    "visualType": "card",
     "visualContainerObjects": {
       "title": [
         {
@@ -18,14 +18,14 @@
             "show": {
               "expr": {
                 "Literal": {
-                  "Value": "true"
+                  "Value": "false"
                 }
               }
             },
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Banque'"
+                  "Value": "''"
                 }
               }
             },
@@ -114,14 +114,14 @@
             "top": {
               "expr": {
                 "Literal": {
-                  "Value": "14D"
+                  "Value": "4D"
                 }
               }
             },
             "bottom": {
               "expr": {
                 "Literal": {
-                  "Value": "10D"
+                  "Value": "4D"
                 }
               }
             },
@@ -163,65 +163,75 @@
           "projections": [
             {
               "field": {
-                "Column": {
+                "Measure": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "dim_institution"
+                      "Entity": "Mesures"
                     }
                   },
-                  "Property": "institution_name"
+                  "Property": "BanqueSelectionnee"
                 }
               },
-              "queryRef": "dim_institution.institution_name",
-              "nativeQueryRef": "institution_name",
-              "displayName": "Banque",
-              "active": true
+              "queryRef": "Mesures.BanqueSelectionnee",
+              "nativeQueryRef": "BanqueSelectionnee",
+              "displayName": "BanqueSelectionnee"
             }
           ]
         }
       }
     },
     "objects": {
-      "data": [
+      "labels": [
         {
           "properties": {
-            "mode": {
-              "expr": {
-                "Literal": {
-                  "Value": "'Dropdown'"
-                }
-              }
-            }
-          }
-        }
-      ],
-      "selection": [
-        {
-          "properties": {
-            "singleSelect": {
-              "expr": {
-                "Literal": {
-                  "Value": "true"
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#132C45'"
+                    }
+                  }
                 }
               }
             },
-            "selectAllCheckboxEnabled": {
+            "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "false"
+                  "Value": "16D"
+                }
+              }
+            },
+            "fontFamily": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Segoe UI Semibold'"
                 }
               }
             }
           }
         }
       ],
-      "header": [
+      "categoryLabels": [
         {
           "properties": {
             "show": {
               "expr": {
                 "Literal": {
                   "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "wordWrap": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
                 }
               }
             }
