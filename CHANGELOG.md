@@ -2,6 +2,12 @@
 
 All notable changes to this project are listed here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Documentation
+
+- Dashboard screenshots in both READMEs.
+
 ## [1.0.0] - 2026-11-14
 
 First delivered version, run on the real FDIC data from Q1 2025 to Q2 2026.
@@ -40,4 +46,5 @@ First delivered version, run on the real FDIC data from Q1 2025 to Q2 2026.
 - pre-commit hooks.
 - dbt documentation and lineage graph on GitHub Pages.
 
+[Unreleased]: https://github.com/ouchchenomar/fdic-bank-data-warehouse/compare/v1.0.0...HEAD
 [1.0.0]: https://github.com/ouchchenomar/fdic-bank-data-warehouse/releases/tag/v1.0.0

@@ -11,6 +11,10 @@
 
 This warehouse loads the quarterly filings of about 4,400 U.S. banks, published by the FDIC, into PostgreSQL. Every figure can be traced back to the file and the run that loaded it. Replaying a file never duplicates data. A revised value becomes a new version without erasing the old one. The dashboard reads only what passed every test: a build that fails leaves the last published state untouched.
 
+![Overview page of the Power BI report: 4,313 filing banks, assets, deposits and quarterly income, banks by asset size and the largest banks](docs/images/vue_ensemble.png)
+
+*The overview page of the Power BI report, which is in French. The other three pages are under [Dashboard](#dashboard).*
+
 ## At a glance
 
 | | |
@@ -97,6 +101,20 @@ The `published` schema holds ten views. Amounts are in thousands of U.S. dollars
 | Fiche établissement | one bank, reached by right-click on any bank of the other pages, then *Drill through*: each figure with its source batch, the versions of each filing and the changed values |
 | Alerte précoce | the filings of failed banks before their failure, and the watch list of the latest quarter |
 | Qualité et lignage | reconciliation with the Quarterly Banking Profile, batches by status, the batch register |
+
+The screenshots were taken on 2026-11-16. The overview page, at the top of this README, counts the 4,313 banks that filed for Q2 2026. The reconciliation keeps only the 4,238 insured institutions, so the quarterly income there is $90.20 billion and not $90.97 billion.
+
+**Alerte précoce (early warning).** The filings of failed banks before their failure, then the watch list. The list comes from an illustrative screen on public data, not from a supervisory rating.
+
+![Early-warning page: 5 covered failures, 4 with at least two signals, 24 banks on the watch list including 3 with three signals](docs/images/alerte.png)
+
+**Fiche établissement (institution)**, here with no bank selected. Each row carries its source batch. At the bottom, the simulated and then reverted correction of Wells Fargo left two versions ([the scenario](#revision-and-publication-gate)).
+
+![Institution page: filings with their source batch, versions of each filing and changed values](docs/images/etablissement.png)
+
+**Qualité et lignage (quality and lineage).** The reconciliation with the Quarterly Banking Profile and the batch register, where a refused batch keeps its reason.
+
+![Quality and lineage page: 12 of 12 QBP checks passed, batches by status and the batch register](docs/images/qualite.png)
 
 ## Getting started
 
@@ -285,7 +303,7 @@ powerbi/                    Power BI project (TMDL model, PBIR report) and the s
 data/sample/                offline sample (versioned); data/raw/ is not versioned
 tests/                      unit, HTTP-mocked and PostgreSQL tests
 .github/workflows/ci.yml    the run.py check job, started on demand
-docs/                       specification, acceptance report, runbook and architecture decision records
+docs/                       specification, acceptance report, runbook, architecture decision records and screenshots
 ```
 
 ## Data source and license

@@ -11,6 +11,10 @@
 
 Cet entrepôt charge dans PostgreSQL les déclarations trimestrielles d'environ 4 400 banques américaines, publiées par la FDIC. Chaque chiffre remonte jusqu'au fichier et au lot qui l'ont chargé. Rejouer un fichier ne duplique jamais les données. Une valeur révisée devient une nouvelle version sans effacer l'ancienne. Le tableau de bord ne lit que ce qui a passé tous les tests : un build en échec laisse intact le dernier état publié.
 
+![Page Vue d'ensemble du rapport Power BI : 4 313 banques déclarantes, actifs, dépôts et résultat du trimestre, répartition par taille et principales banques](docs/images/vue_ensemble.png)
+
+*La page « Vue d'ensemble » du rapport Power BI. Les trois autres sont dans [Tableau de bord](#tableau-de-bord).*
+
 ## En bref
 
 | | |
@@ -97,6 +101,20 @@ Le schéma `published` contient dix vues. Les montants sont en milliers de dolla
 | Fiche établissement | une banque, atteinte par clic droit sur n'importe quelle banque des autres pages, puis *Extraire* : chaque chiffre avec son lot source, les versions de chaque déclaration et les valeurs modifiées |
 | Alerte précoce | les déclarations des banques défaillantes avant leur faillite, et la liste de surveillance du dernier trimestre |
 | Qualité et lignage | rapprochement avec le Quarterly Banking Profile, lots par statut, registre des lots |
+
+Les captures datent du 16/11/2026. La Vue d'ensemble, en haut de cette page, compte les 4 313 banques déclarantes du T2 2026. Le rapprochement ne retient que les 4 238 établissements assurés : le résultat du trimestre y vaut 90,20 Md$, et non 90,97.
+
+**Alerte précoce.** Les déclarations des banques défaillantes avant leur faillite, puis la liste de surveillance. Cette liste vient d'un filtre indicatif sur des données publiques, pas d'une notation prudentielle.
+
+![Page Alerte précoce : 5 faillites couvertes, 4 avec au moins deux signaux, 24 banques sous surveillance dont 3 avec trois signaux](docs/images/alerte.png)
+
+**Fiche établissement**, ici sans banque choisie. Chaque ligne porte son lot source. En bas, la correction simulée puis annulée de Wells Fargo a laissé deux versions ([le scénario](#révision-et-contrôle-de-publication)).
+
+![Page Fiche établissement : déclarations avec leur lot source, versions de chaque déclaration et valeurs modifiées](docs/images/etablissement.png)
+
+**Qualité et lignage.** Le rapprochement avec le Quarterly Banking Profile et le registre des lots, où un lot refusé garde sa raison.
+
+![Page Qualité et lignage : 12 contrôles QBP conformes sur 12, lots par statut et registre des lots](docs/images/qualite.png)
 
 ## Démarrage
 
@@ -285,7 +303,7 @@ powerbi/                    projet Power BI (modèle TMDL, rapport PBIR) et le s
 data/sample/                échantillon hors ligne (versionné) ; data/raw/ n'est pas versionné
 tests/                      tests unitaires, HTTP simulé et PostgreSQL
 .github/workflows/ci.yml    le contrôle run.py check, lancé à la demande
-docs/                       cahier des charges, procès-verbal de recette, guide d'exploitation et décisions d'architecture
+docs/                       cahier des charges, procès-verbal de recette, guide d'exploitation, décisions d'architecture et captures
 ```
 
 ## Source des données et licence
